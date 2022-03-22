@@ -83,8 +83,7 @@ UFA_workflow <- function(spreadsheet) {
       call_molecular_formula_annotation <- function(i) {
         peaklist <- loadRdata(paste0(input_path_pl, "/peaklist_", file_name_hrms[i], ".Rdata"))
         ##
-        MassSpecFile <- paste0(input_path_hrms, "/", file_name_hrms[i])
-        outputer003 <- MS_deconvoluter(MassSpecFile)
+        outputer003 <- IPA_MSdeconvoluter(input_path_hrms, file_name_hrms[i])
         spectraList <- outputer003[[1]]
         ##
         MolecularFormulaAnnotationTable <- molecular_formula_annotator(IPDB, spectraList, peaklist, mass_accuracy, maxNEME, minPCS, minNDCS, minRCS, Score_coeff, number_processing_threads = NPT)
@@ -98,7 +97,7 @@ UFA_workflow <- function(spreadsheet) {
         return()
       }
       if (para_mode == "peakmode" | NPT == 1) {
-        progressBARboundaries <- txtProgressBar(min = 1, max = L_PL, initial = 1, style = 3)
+        progressBARboundaries <- txtProgressBar(min = 0, max = L_PL, initial = 1, style = 3)
         for (i in 1:L_PL) {
           setTxtProgressBar(progressBARboundaries, i)
           ##
@@ -144,7 +143,14 @@ UFA_workflow <- function(spreadsheet) {
     x0008 <- PARAM[which(PARAM[, 1] == 'PARAM0008'), 2]
     if (tolower(x0008) == "yes") {
       PARAM_SA <- UFA_profile_visualizer_xlsxAnalyzer(spreadsheet)
-      UFA_profile_visualizer(PARAM_SA)
+      AnnotatedSpectraTable <- UFA_profile_visualizer(PARAM_SA)
+      ##
+      exportedAnnotatedSpectraTable <- if (tolower(PARAM_SA[which(PARAM_SA[, 1] == 'SA0011'), 2]) == "yes") {TRUE} else {FALSE}
+      if (exportedAnnotatedSpectraTable) {
+        output_path <- PARAM_SA[which(PARAM_SA[, 1] == 'PARAM0014'), 2]
+        save(AnnotatedSpectraTable, file = paste0(output_path, "/AnnotatedSpectraTable.Rdata"))
+        write.csv(AnnotatedSpectraTable, file = paste0(output_path, "/AnnotatedSpectraTable.csv"))
+      }
     }
     required_time <- Sys.time() - initiation_time
     print(required_time)

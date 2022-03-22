@@ -1,12 +1,12 @@
 molecular_formula_annotator <- function(IPDB, spectraList, peaklist, mass_accuracy, maxNEME, minPCS, minNDCS, minRCS, Score_coeff, number_processing_threads = 1) {
   MolecularFormulaAnnotationTable <- c()
   ##
-  molecular_formula_annotator_call <- function(i) {
+  molecular_formula_annotator_call <- function(k) {
     mzList.m <- c()
-    x_mzF <- which(abs(peaklist[i, 8] - IPDB[[1]]) <= mass_accuracy)
+    x_mzF <- which(abs(peaklist[k, 8] - IPDB[[1]]) <= mass_accuracy)
     if (length(x_mzF) > 0) {
-      R13C_PL <- peaklist[i, 11]
-      RangeScan <- peaklist[i, 1]:peaklist[i, 2]
+      R13C_PL <- peaklist[k, 11]
+      RangeScan <- peaklist[k, 1]:peaklist[k, 2]
       NumberScans <- length(RangeScan)
       mzList.m <- do.call(rbind, lapply(x_mzF, function(j) {
         A <- c()
@@ -49,10 +49,10 @@ molecular_formula_annotator <- function(IPDB, spectraList, peaklist, mass_accura
                 if (RCS >= minRCS) {
                   R13C_IP <- IPDB[[4]][j]
                   IdentificationScore <- identification_score(Score_coeff, size_IP, PCS, RCS, NEME, maxNEME, R13C_PL, R13C_IP)
-                  A <- c(i, j,
+                  A <- c(k, j,
                          IsotopicProfile[x_100, 1],
-                         peaklist[i, 8],
-                         peaklist[i, 3],
+                         peaklist[k, 8],
+                         peaklist[k, 3],
                          max_Int,
                          NEME,
                          PCS,

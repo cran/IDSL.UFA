@@ -15,5 +15,5 @@ UFA spreadsheet
 }
 }
 \value{
-This function returns the UFA parameters to feed the UFA_Workflow function.
+This function returns the UFA parameters to feed the UFA_workflow function.
 }

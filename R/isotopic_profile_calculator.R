@@ -1,5 +1,5 @@
 isotopic_profile_calculator <- function(MoleFormVec, Elements_mass_abundance, peak_spacing, intensity_cutoff,
-                                        UFA_IP_memeory_variables = c(1e20, 1e-12)) {
+                                        UFA_IP_memeory_variables = c(1e30, 1e-12)) {
   ##
   combination_formula <- function(n, k) {
     factorial(n + k - 1)/factorial(n - 1)/factorial(k)
@@ -92,7 +92,7 @@ isotopic_profile_calculator <- function(MoleFormVec, Elements_mass_abundance, pe
     IsotopeMasses <- Elements_mass_abundance[[i]][[1]]
     IsotopeCompositions <- Elements_mass_abundance[[i]][[2]]
     Element_Combo <- SUB_COMB(MoleFormVec[i], IsotopeMasses, IsotopeCompositions)
-    el <- el +1
+    el <- el + 1
     El_Mass[[el]] <- Element_Combo[[1]]
     RAel_El[[el]] <- Element_Combo[[2]]
     Combination_Size <- Combination_Size * length(El_Mass[[el]])

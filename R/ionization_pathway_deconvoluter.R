@@ -12,9 +12,9 @@ ionization_pathway_deconvoluter <- function(IonPathways, Elements) {
   ##
   IonPW_DC <- lapply(1:length(IonPathways), function(i) {
     b <- gsub(" ", "", IonPathways[i])
-    xp <- stri_locate_all_regex(b, "[+]")[[1]][, 1]
-    xm <- stri_locate_all_regex(b, "-")[[1]][, 1]
-    x_bracket <- stri_locate_all_regex(b, "[]]")[[1]][, 1]
+    xp <- UFA_locate_regex(b, "[+]")[, 1]
+    xm <- UFA_locate_regex(b, "-")[, 1]
+    x_bracket <- UFA_locate_regex(b, "[]]")[, 1]
     xpm <- sort(unique(c(xp, xm)))
     xpm <- xpm[xpm < x_bracket]
     xpm <- c(xpm, x_bracket)

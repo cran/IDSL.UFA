@@ -1,7 +1,7 @@
 formula_vector_generator <- function (molecular_formula, Elements, L_Elements = length(Elements)) {
   MolecularFormulaVector <- rep(0, L_Elements)
   for (i in 1:L_Elements) {
-    Z <- stri_locate_all_regex(molecular_formula, Elements[i])[[1]]
+    Z <- UFA_locate_regex(molecular_formula, Elements[i])
     if (!is.na(Z[1])) {
       if (dim(Z)[1] > 1) {
         return(rep(-Inf, L_Elements))
@@ -11,15 +11,15 @@ formula_vector_generator <- function (molecular_formula, Elements, L_Elements = 
       if (!grepl("[[:digit:]]", Charmolecular_formula)) {
         Number <- 1
       } else {
-        Number <- 0
-        NextChar <- 0
-        while (NextChar != 1) {
+        Number <- ""
+        NextChar <- TRUE
+        while (NextChar) {
           Charmolecular_formula <- substr(molecular_formula, z[2] + 1, z[2] + 1)
           if (grepl("[[:digit:]]", Charmolecular_formula)) {
             Number <- paste0(Number, Charmolecular_formula)
             z[2] <- z[2] + 1
           } else {
-            NextChar <- 1
+            NextChar <- FALSE
             Number <- as.numeric(Number)
           }
         }

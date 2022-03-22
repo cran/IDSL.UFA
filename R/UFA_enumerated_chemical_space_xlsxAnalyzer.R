@@ -326,7 +326,7 @@ UFA_enumerated_chemical_space_xlsxAnalyzer <- function(PARAM_MF) {
   if (checkpoint_parameter == 1) {
     print(paste0("The approximate maximum number of the candidate molecular formulas is ", L_MolVecMat, " !"))
     ##
-    print("The required time to just iterate loops of the substrcture patterns is :")
+    print("The required time only to iterate loops through this chemical space is :")
     tr2_sub_pattern <- Sys.time()
     print(tr2_sub_pattern - tr1_sub_pattern)
   }

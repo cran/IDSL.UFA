@@ -17,6 +17,9 @@ A vector of ionization pathways. Pathways should be like [Coeff*M+ADD1-DED1+...]
 A vector string of the used elements
 }
 }
+\value{
+A list of adduct calculation values for each ionization pathway.
+}
 \examples{
 Elements <- element_sorter()[[1]]
 IonPathways <- c("[M]+", "[M+H]+", "[2M-Cl]-", "[3M+CO2-H2O+Na-KO2+HCl-NH4]-")

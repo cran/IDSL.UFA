@@ -3,7 +3,7 @@ UFA_score_function_optimization_xlsxAnalyzer <- function(spreadsheet) {
   if (length(spreadsheet) >= 4) {
     if (typeof(spreadsheet) == "list") {
       PARAM_SFT <- cbind(spreadsheet[, 2], spreadsheet[, 4])
-      checkpoint_parameter <- 1
+      checkpoint_parameter <- TRUE
     } else {
       print("The UFA spreadsheet was not produced properly!")
     }
@@ -12,7 +12,7 @@ UFA_score_function_optimization_xlsxAnalyzer <- function(spreadsheet) {
       if (file.exists(spreadsheet)){
         spreadsheet_UFA <- readxl::read_xlsx(spreadsheet, sheet = "score_function_optimization")
         PARAM_SFT <- cbind(spreadsheet_UFA[, 2], spreadsheet_UFA[, 4])
-        checkpoint_parameter <- 1
+        checkpoint_parameter <- TRUE
       } else {
         print("The UFA spreadsheet not found! It should be an Excel file with .xlsx extention!")
       }
@@ -22,7 +22,7 @@ UFA_score_function_optimization_xlsxAnalyzer <- function(spreadsheet) {
   } else {
     print("The UFA spreadsheet was not produced properly!")
   }
-  if (checkpoint_parameter == 1) {
+  if (checkpoint_parameter == TRUE) {
     ########################## Global parameters #################################
     x0001 <- PARAM_SFT[which(PARAM_SFT[, 1] == 'SFT0001'), 2]
     if (length(x0001) == 0) {
@@ -420,7 +420,7 @@ UFA_score_function_optimization_xlsxAnalyzer <- function(spreadsheet) {
     }
     ##
   }
-  if (checkpoint_parameter == 0) {
+  if (checkpoint_parameter == FALSE) {
     print("Please visit   https://ufa.idsl.me   for instructions!")
     PARAM_SFT <- c()
   }

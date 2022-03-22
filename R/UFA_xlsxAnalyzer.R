@@ -22,7 +22,7 @@ UFA_xlsxAnalyzer <- function(spreadsheet) {
   } else {
     print("The UFA spreadsheet was not produced properly!")
   }
-  if (checkpoint_parameter == 1) {
+  if (checkpoint_parameter == TRUE) {
     ######################## Global parameters #################################
     x0001 <- PARAM[which(PARAM[, 1] == 'PARAM0001'), 2]
     if (length(x0001) == 0) {
@@ -250,20 +250,19 @@ UFA_xlsxAnalyzer <- function(spreadsheet) {
         }
       }
       ##
-    }
-    ##
-    x0014 <- which(PARAM[, 1] == 'PARAM0014')
-    if (length(x0014) == 0) {
-      print("ERROR!!! Problem with PARAM0014!")
-      checkpoint_parameter <- FALSE
-    } else {
-      output_path <- gsub("\\", "/", PARAM[x0014, 2], fixed = TRUE)
-      PARAM[x0014, 2] <- output_path
-      if (!dir.exists(output_path)) {
-        tryCatch(dir.create(output_path))
+      x0014 <- which(PARAM[, 1] == 'PARAM0014')
+      if (length(x0014) == 0) {
+        print("ERROR!!! Problem with PARAM0014!")
+        checkpoint_parameter <- FALSE
+      } else {
+        output_path <- gsub("\\", "/", PARAM[x0014, 2], fixed = TRUE)
+        PARAM[x0014, 2] <- output_path
         if (!dir.exists(output_path)) {
-          print("ERROR!!! Problem with PARAM0014! R can only create one folder!")
-          checkpoint_parameter <- FALSE
+          tryCatch(dir.create(output_path))
+          if (!dir.exists(output_path)) {
+            print("ERROR!!! Problem with PARAM0014! R can only create one folder!")
+            checkpoint_parameter <- FALSE
+          }
         }
       }
     }
@@ -556,7 +555,7 @@ UFA_xlsxAnalyzer <- function(spreadsheet) {
       }
     }
   }
-  if (checkpoint_parameter == 0) {
+  if (checkpoint_parameter == FALSE) {
     print("Please visit   https://ufa.idsl.me    for instructions!")
     PARAM <- c()
   }

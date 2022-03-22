@@ -20,6 +20,9 @@ A matrix of numerical vectors of molecular formulas in each row.
 Number of processing threads for multi-threaded processing
 }
 }
+\value{
+A vector of molecular formulas
+}
 \examples{
 Elements <- c("C", "H", "O", "N", "Br", "Cl")
 MoleFormVec1 <- c(2, 6, 1, 0, 0, 0) # C2H6O

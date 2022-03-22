@@ -44,7 +44,7 @@ UFA_profile_visualizer <- function(PARAM_SA) {
   mass_accuracy <- as.numeric(PARAM_SA[which(PARAM_SA[, 1] == 'SA0008'), 2])
   number_processing_threads <- as.numeric(PARAM_SA[which(PARAM_SA[, 1] == 'SA0009'), 2])
   exportSpectra <- if (tolower(PARAM_SA[which(PARAM_SA[, 1] == 'SA0010'), 2]) == "yes") {TRUE} else {FALSE}
-  exportedAnnotatedSpectraTable = if (tolower(PARAM_SA[which(PARAM_SA[, 1] == 'SA0011'), 2]) == "yes") {TRUE} else {FALSE}
+  exportedAnnotatedSpectraTable <- if (tolower(PARAM_SA[which(PARAM_SA[, 1] == 'SA0011'), 2]) == "yes") {TRUE} else {FALSE}
   if (exportSpectra == TRUE | exportedAnnotatedSpectraTable == TRUE) {
     ##
     EL <- element_sorter()
@@ -126,8 +126,7 @@ UFA_profile_visualizer <- function(PARAM_SA) {
     SpectraAnalysis_call <- function (i_pl) {
       peaklist <- loadRdata(paste0(input_path_pl, "/peaklist_", file_name_hrms[i_pl], ".Rdata"))
       ##
-      MassSpecFile <- paste0(input_path_hrms, "/", file_name_hrms[i_pl])
-      outputer003 <- MS_deconvoluter(MassSpecFile)
+      outputer003 <- IPA_MSdeconvoluter(input_path_hrms, file_name_hrms[i_pl])
       spectraList <- outputer003[[1]]
       MS_polarity <- outputer003[[3]]
       ##
@@ -272,13 +271,17 @@ UFA_profile_visualizer <- function(PARAM_SA) {
       }, mc.cores = number_processing_threads))
       closeAllConnections()
     }
+    ##
+    print("Completed producing mass spectra!")
+    ##
     if (exportedAnnotatedSpectraTable == TRUE) {
       AnnotatedSpectraTable <- data.frame(AnnotatedSpectraTable)
       rownames(AnnotatedSpectraTable) <- c()
       colnames(AnnotatedSpectraTable) <- c("Filename", "PeakID", "ID_IonFormula", "sizeIP", "IonFormula", "m/z theoretical", "m/z peaklist", "Mass accuracy (Da)", "RetentionTime(min)", "PeakHeight", "NEME (mDa)", "PCS (per-mille)", "R13C peaklist (%)", "R13C theoretical (%)", "NDCS @ 80%", "RCS (%) @ 80%")
-      save(AnnotatedSpectraTable, file = paste0(output_path, "/AnnotatedSpectraTable.Rdata"))
-      write.csv(AnnotatedSpectraTable, file = paste0(output_path, "/AnnotatedSpectraTable.csv"))
+      ##
+      return(AnnotatedSpectraTable)
+    } else {
+      return()
     }
-    print("Completed producing mass spectra!")
   }
 }

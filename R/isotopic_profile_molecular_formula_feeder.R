@@ -1,4 +1,4 @@
-isotopic_profile_molecular_formula_feeder <- function(molecular_formula, peak_spacing = 0, intensity_cutoff_str = 1, UFA_IP_memeory_variables = c(1e20, 1e-12), IonPathways = "[M]+", number_processing_threads = 1) {
+isotopic_profile_molecular_formula_feeder <- function(molecular_formula, peak_spacing = 0, intensity_cutoff_str = 1, UFA_IP_memeory_variables = c(1e30, 1e-12), IonPathways = "[M]+", number_processing_threads = 1) {
   EL <- element_sorter()
   Elements <- EL[[1]]
   Elements_mass_abundance <- EL[[2]]

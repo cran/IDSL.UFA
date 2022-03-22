@@ -2,8 +2,6 @@ detect_formula_sets  <- function(molecular_formulas, ratio_delta_HBrClFI_C, mixe
   ##
   classes_formula_matrix <- c()
   ##
-  osType <- Sys.info()[['sysname']]
-  ##
   molecular_formulas <- unique(molecular_formulas)
   ## To detect halogenated-saturated compounds such as PFOS or mixed halogenated compounds with hydrogen
   if (mixed.HBrClFI.allowed == TRUE) {
@@ -12,7 +10,7 @@ detect_formula_sets  <- function(molecular_formulas, ratio_delta_HBrClFI_C, mixe
     N_mixed.HBrClFI.allowed <- 1
   }
   ##
-  MMFC <- min_molecular_formula_class - 1
+  MMFC <- max(2, min_molecular_formula_class - 1)
   MNC <- max_number_formula_class + 1
   ################################################################################
   Elements <- c("As", "Br", "Cl", "Na", "Se", "Si", "B", "C", "F", "H", "I", "K", "N", "O", "P", "S")
@@ -27,23 +25,31 @@ detect_formula_sets  <- function(molecular_formulas, ratio_delta_HBrClFI_C, mixe
     mol_vec
   }
   ##
-  if (osType == "Windows") {
-    clust <- makeCluster(number_processing_threads)
-    registerDoSNOW(clust)
-    ##
-    molecular_formulasMat <- foreach(k = 1:length(molecular_formulas), .combine = 'rbind', .verbose = FALSE) %dopar% {
+  if (number_processing_threads == 1) {
+    molecular_formulasMat <- do.call(rbind, lapply(1:length(molecular_formulas), function (k) {
       molecular_formulasMat_call(k)
+    }))
+  } else {
+    osType <- Sys.info()[['sysname']]
+    ##
+    if (osType == "Windows") {
+      clust <- makeCluster(number_processing_threads)
+      registerDoSNOW(clust)
+      ##
+      molecular_formulasMat <- foreach(k = 1:length(molecular_formulas), .combine = 'rbind', .verbose = FALSE) %dopar% {
+        molecular_formulasMat_call(k)
+      }
+      ##
+      stopCluster(clust)
     }
-    ##
-    stopCluster(clust)
-  }
-  if (osType == "Linux") {
-    ##
-    molecular_formulasMat <- do.call(rbind, mclapply(1:length(molecular_formulas), function (k) {
-      molecular_formulasMat_call(k)
-    }, mc.cores = number_processing_threads))
-    ##
-    closeAllConnections()
+    if (osType == "Linux") {
+      ##
+      molecular_formulasMat <- do.call(rbind, mclapply(1:length(molecular_formulas), function (k) {
+        molecular_formulasMat_call(k)
+      }, mc.cores = number_processing_threads))
+      ##
+      closeAllConnections()
+    }
   }
   ##
   molecular_formulasMat <- unique(as.matrix(molecular_formulasMat)) # To remove redundant rows
@@ -192,45 +198,64 @@ detect_formula_sets  <- function(molecular_formulas, ratio_delta_HBrClFI_C, mixe
     A
   }
   ##
-  if (osType == "Windows") {
-    clust <- makeCluster(number_processing_threads)
-    registerDoSNOW(clust)
+  if (number_processing_threads == 1) {
     ##
-    I <- foreach(k = 1:length(unique_molecular_formulas1), .verbose = FALSE) %dopar% {
+    I <-  lapply(1:length(unique_molecular_formulas1), function (k) {
       I_call(k)
-    }
+    })
     I <- unlist(I, recursive = FALSE)
     ##
     if (length(I) > 0) {
-      classes <- foreach(k = 1:length(I), .verbose = FALSE) %dopar% {
+      classes <-  lapply(1:length(I), function (k) {
         classes_call(k)
+      })
+      ##
+      classes_formula_matrix <- do.call(rbind, lapply(1:length(classes), function(k) {
+        classes_formula_matrix_call(k)
+      }))
+    }
+    ##
+  } else {
+    if (osType == "Windows") {
+      clust <- makeCluster(number_processing_threads)
+      registerDoSNOW(clust)
+      ##
+      I <- foreach(k = 1:length(unique_molecular_formulas1), .verbose = FALSE) %dopar% {
+        I_call(k)
+      }
+      I <- unlist(I, recursive = FALSE)
+      ##
+      if (length(I) > 0) {
+        classes <- foreach(k = 1:length(I), .verbose = FALSE) %dopar% {
+          classes_call(k)
+        }
+        ##
+        classes_formula_matrix <- foreach(k = 1:length(classes), .combine = 'rbind', .verbose = FALSE) %dopar% {
+          classes_formula_matrix_call(k)
+        }
       }
       ##
-      classes_formula_matrix <- foreach(k = 1:length(classes), .combine = 'rbind', .verbose = FALSE) %dopar% {
-        classes_formula_matrix_call(k)
-      }
+      stopCluster(clust)
     }
-    ##
-    stopCluster(clust)
-  }
-  if (osType == "Linux") {
-    ##
-    I <-  mclapply(1:length(unique_molecular_formulas1), function (k) {
-      I_call(k)
-    }, mc.cores = number_processing_threads)
-    I <- unlist(I, recursive = FALSE)
-    ##
-    if (length(I) > 0) {
-      classes <-  mclapply(1:length(I), function (k) {
-        classes_call(k)
+    if (osType == "Linux") {
+      ##
+      I <-  mclapply(1:length(unique_molecular_formulas1), function (k) {
+        I_call(k)
       }, mc.cores = number_processing_threads)
+      I <- unlist(I, recursive = FALSE)
       ##
-      classes_formula_matrix <- do.call(rbind, mclapply(1:length(classes), function(k) {
-        classes_formula_matrix_call(k)
-      }, mc.cores = number_processing_threads))
+      if (length(I) > 0) {
+        classes <-  mclapply(1:length(I), function (k) {
+          classes_call(k)
+        }, mc.cores = number_processing_threads)
+        ##
+        classes_formula_matrix <- do.call(rbind, mclapply(1:length(classes), function(k) {
+          classes_formula_matrix_call(k)
+        }, mc.cores = number_processing_threads))
+      }
+      ##
+      closeAllConnections()
     }
-    ##
-    closeAllConnections()
   }
   ##
   Xcolnames <- sapply(1:max_number_formula_class, function(i) {

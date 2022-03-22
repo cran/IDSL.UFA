@@ -1,15 +1,16 @@
 Package: IDSL.UFA
 Type: Package
-Title: Ultimate Formula Annotation (UFA) for HRMS Data Processing
-Version: 1.0
+Title: United Formula Annotation (UFA) for HRMS Data Processing
+Version: 1.1
 Authors@R: c(
     person(family = "Fakouri-Baygi", given = "Sadjad", email = "sadjad.fakouri-baygi@mssm.edu",
     role = c("cre","aut"), comment = c(ORCID = "0000-0002-6864-6911")),
     person(family = "Barupal", given = "Dinesh", email = "dinesh.kumar@mssm.edu", role = "aut",
            comment = c(ORCID = "0000-0002-9954-8628")))
 Depends: R (>= 4.0)
-Imports: Rcpp, BiocManager, mzR, readxl, parallel, doSNOW, foreach,
-        stringi, IDSL.IPA (>= 1.3), GA, doParallel, ggplot2, gridExtra
+Imports: IDSL.MXP, xml2, base64enc, IDSL.IPA (>= 1.4), stats, grid,
+        readxl, parallel, doSNOW, foreach, GA, doParallel, ggplot2,
+        gridExtra
 Author: Sadjad Fakouri-Baygi [cre, aut]
     (<https://orcid.org/0000-0002-6864-6911>),
   Dinesh Barupal [aut] (<https://orcid.org/0000-0002-9954-8628>)
@@ -23,6 +24,6 @@ Encoding: UTF-8
 LazyData: true
 Archs: i386, x64
 NeedsCompilation: no
-Packaged: 2021-12-18 00:17:29 UTC; sfbaygi
+Packaged: 2022-03-22 03:35:49 UTC; sfbaygi
 Repository: CRAN
-Date/Publication: 2021-12-19 18:02:10 UTC
+Date/Publication: 2022-03-22 13:10:12 UTC

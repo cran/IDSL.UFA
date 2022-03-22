@@ -113,8 +113,7 @@ zero_score_function <- function(PARAM_SFT) {
       if (L_x_ss_i > 0) {
         peaklist <- matrix(peaklist[x_ss_i, ], nrow = L_x_ss_i)
         ##
-        MassSpecFile <- paste0(input_path_hrms, "/", file_name_hrms[i])
-        outputer003 <- MS_deconvoluter(MassSpecFile)
+        outputer003 <- IPA_MSdeconvoluter(input_path_hrms, file_name_hrms[i])
         spectraList <- outputer003[[1]]
         ##
         FinalList <- molecular_formula_annotator(IPDB, spectraList, peaklist, mass_accuracy, maxNEME, minPCS, minNDCS, minRCS, Score_coeff, number_processing_threads = 1)
@@ -226,7 +225,8 @@ zero_score_function <- function(PARAM_SFT) {
   x_ip <- SizeIP_IsotopicProfile_DataBase[as.numeric(Entire_final_list_unoptimized[, 3])]
   ##
   Entire_final_list_unoptimized <- cbind(Entire_final_list_unoptimized[, 1:8], x_ip, Entire_final_list_unoptimized[, 9:16], CompoundID, Entire_final_list_unoptimized[, dim(Entire_final_list_unoptimized)[2]])
-  names(Entire_final_list_unoptimized) <- c("FileName", "PeakID", "ID_IonFormula",
+  Entire_final_list_unoptimized <- data.frame(Entire_final_list_unoptimized)
+  colnames(Entire_final_list_unoptimized) <- c("FileName", "PeakID", "ID_IonFormula",
                                             "IonFormula", "m/z Isotopic Profile", "m/z peaklist",
                                             "RT(min)", "PeakHeight", "size IP", "NEME(mDa)", "PCS",
                                             "R13C peakList", "R13C Isotopic Profile", "NDCS", "RCS(%)",

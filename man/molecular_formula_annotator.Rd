@@ -14,7 +14,7 @@ number_processing_threads)
 }
 \arguments{
   \item{IPDB}{
-A isotopic profile database produced by the IDSL.UFA functions.
+An isotopic profile database produced by the IDSL.UFA functions.
 }
   \item{spectraList}{
 spectraList from the 'MS_deconvoluter' function of the IDSL.IPA package
