@@ -1,8 +1,8 @@
-formula_vector_generator <- function (molecular_formula, Elements, L_Elements = length(Elements)) {
+formula_vector_generator <- function(molecular_formula, Elements, L_Elements = length(Elements)) {
   MolecularFormulaVector <- rep(0, L_Elements)
   for (i in 1:L_Elements) {
     Z <- UFA_locate_regex(molecular_formula, Elements[i])
-    if (!is.na(Z[1])) {
+    if (!is.na(Z[1, 1])) {
       if (dim(Z)[1] > 1) {
         return(rep(-Inf, L_Elements))
       }

@@ -24,26 +24,37 @@ aligned_molecular_formula_annotator <- function(PARAM) {
   input_path_peak_property <- PARAM[which(PARAM[, 1] == 'PARAM0026'), 2]
   peak_property <- loadRdata(input_path_peak_property)
   if (dim(peak_property)[1] != L_peaks | dim(peak_property)[2] != (L_samples + 2)) {
-    stop("Error!!! aligned peak property table and indexed peak table are not in the same size!!!")
+    stop("Error!!! aligned peak property and peak indexed tables are not in the same size!!!")
   }
   ##
-  N_top_candidates <- as.numeric(PARAM[which(PARAM[, 1] == 'PARAM0027'), 2])
+  maxRankSample <- as.numeric(PARAM[which(PARAM[, 1] == 'PARAM0027'), 2])
   N_candidate <- as.numeric(PARAM[which(PARAM[, 1] == 'PARAM0028'), 2])
-  MF_Zcol <- array(rep(0, N_top_candidates*L_peaks*L_samples), dim = c(N_top_candidates, L_peaks, L_samples))
   ##
   adjust_freq_rank <- PARAM[which(PARAM[, 1] == 'PARAM0029'), 2]
   N_candidate3 <- N_candidate*3
   ##
+  call_MF_Zcol <- function(i) {
+    peak_table_id <- peak_Xcol[, (i + 2)]
+    MolecularFormulaAnnotationTable <- loadRdata(paste0(output_path_annotated_mf_tables, "/", mf_table_list[i]))
+    matched_peak_ids <- as.numeric(MolecularFormulaAnnotationTable[, 1])
+    matched_mf_ids <- as.numeric(MolecularFormulaAnnotationTable[, 2])
+    x_peak_ids <- which(peak_table_id %in% unique(matched_peak_ids) == TRUE)
+    ##
+    if (length(x_peak_ids) > 0) {
+      do.call(rbind, lapply(x_peak_ids, function(j) {
+        x_j <- which(matched_peak_ids == peak_table_id[j])
+        max_k <- min(c(maxRankSample, length(x_j)))
+        ##
+        cbind(rep(j, max_k), matched_mf_ids[x_j[1:max_k]], seq(1, max_k, 1))
+      }))
+    }
+  }
+  ##
   call_calculating_median_ranks <- function(j) {
     ID_freq_Rank <- rep(0, N_candidate3)
     ##
-    entire_IDs <- MF_Zcol[, j, ]
-    ID_rank <- do.call(rbind, lapply(1:L_samples, function(q) {
-      cbind(entire_IDs[, q], seq(1, N_top_candidates))
-    }))
-    x_non0 <- which(ID_rank[, 1] != 0)
-    if (length(x_non0) > 0) {
-      ID_rank <- matrix(ID_rank[x_non0, ], ncol = 2)
+    if (x_peaks[j] != x_peaks[j + 1]) {
+      ID_rank <- matrix(MF_Zcol[(x_peaks[j] + 1):x_peaks[j + 1], 2:3], ncol = 2)
       ##
       t_IDs <- sort(table(ID_rank[, 1]), decreasing = TRUE)
       max_k <- min(c(N_candidate, length(t_IDs)))
@@ -114,176 +125,296 @@ aligned_molecular_formula_annotator <- function(PARAM) {
       return(M_ID_ordered)
     }
   }
-  ##
-  print("Initiated matching peak IDs!")
-  progressBARboundaries <- txtProgressBar(min = 1, max = L_samples, initial = 1, style = 3)
-  ##
-  osType <- Sys.info()[['sysname']]
-  if (osType == "Windows") {
-    clust <- makeCluster(number_processing_threads)
-    registerDoSNOW(clust)
+  ####
+  if (number_processing_threads == 1) {
     ##
-    for (i in 1:L_samples) {
-      setTxtProgressBar(progressBARboundaries, i)
+    print("Initiated matching peak IDs!")
+    progressBARboundaries <- txtProgressBar(min = 0, max = L_samples, initial = 1, style = 3)
+    #
+    MF_Zcol <- do.call(rbind, lapply(1:L_samples, function(k) {
+      setTxtProgressBar(progressBARboundaries, k)
       ##
-      peak_table_id <- peak_Xcol[, (i + 2)]
-      MolecularFormulaAnnotationTable <- loadRdata(paste0(output_path_annotated_mf_tables, "/", mf_table_list[i]))
-      matched_peak_ids <- as.numeric(MolecularFormulaAnnotationTable[, 1])
-      matched_mf_ids <- as.numeric(MolecularFormulaAnnotationTable[, 2])
-      x_peak_ids <- which(peak_table_id%in%unique(matched_peak_ids) == TRUE)
-      L_x_peak_ids <- length(x_peak_ids)
-      ##
-      if (L_x_peak_ids > 0) {
-        mjx <- foreach(j = x_peak_ids, .verbose = FALSE) %dopar% {
-          x_j <- which(matched_peak_ids == peak_table_id[j])
-          matched_mf_ids[x_j]
-        }
-        ##
-        for (j in 1:L_x_peak_ids) {
-          x_mf_id <- mjx[[j]]
-          max_k <- min(c(N_top_candidates, length(x_mf_id)))
-          for (k in 1:max_k) {
-            MF_Zcol[k, x_peak_ids[j], i] <- x_mf_id[k]
-          }
+      call_MF_Zcol(k)
+    }))
+    close(progressBARboundaries)
+    #
+    MF_Zcol <- MF_Zcol[order(MF_Zcol[, 1]), ]
+    x_peaks <- unique(c(0, which(diff(MF_Zcol[, 1]) > 0), dim(MF_Zcol)[1]))
+    u_peakid <- unique(MF_Zcol[, 1])
+    #
+    if (u_peakid[1] != 1) {
+      u_peakid <- c(1, u_peakid)
+      x_peaks <- c(x_peaks[1], x_peaks)
+    }
+    #
+    progressBARboundaries <- txtProgressBar(min = 0, max = L_peaks, initial = 1, style = 3)
+    for (k in 1:L_peaks) {
+      setTxtProgressBar(progressBARboundaries, k)
+      if (k > length(u_peakid)) {
+        u_peakid <- c(u_peakid, k)
+        x_peaks <- c(x_peaks, x_peaks[k])
+      } else {
+        if (u_peakid[k] != k) {
+          u_peakid <- append(u_peakid, k, after = (k - 1))
+          x_peaks <- append(x_peaks, x_peaks[k], after = (k - 1))
         }
       }
     }
     close(progressBARboundaries)
+    #
     print("Completed matching peak IDs!")
     ##
     print("Initiated calculating median ranks!")
-    M_IDs <- foreach(k = 1:L_peaks, .combine = 'rbind', .verbose = FALSE) %dopar% {
+    progressBARboundaries <- txtProgressBar(min = 0, max = L_peaks, initial = 1, style = 3)
+    #
+    M_IDs <- do.call(rbind, lapply(1:L_peaks, function(k) {
+      setTxtProgressBar(progressBARboundaries, k)
+      ##
       call_calculating_median_ranks(k)
-    }
+    }))
     MF_Zcol <- 0
+    close(progressBARboundaries)
     print("Completed calculating median ranks!")
     ##
     if (tolower(adjust_freq_rank) == "yes") {
-      print("Initiated adjusting frequencies and ranks!")
       ##
-      freq_rank_table <- foreach(k = 1:N_candidate, .combine = 'cbind', .verbose = FALSE) %dopar% {
+      print("Initiated adjusting frequencies and ranks!")
+      progressBARboundaries <- txtProgressBar(min = 0, max = N_candidate, initial = 1, style = 3)
+      #
+      freq_rank_table <- do.call(cbind, lapply(1:N_candidate, function(k) {
+        setTxtProgressBar(progressBARboundaries, k)
+        ##
         call_freq_rank_table(k)
-      }
+      }))
+      close(progressBARboundaries)
       #
       freq_rank_table[is.nan(freq_rank_table)] <- 0
       ##
+      progressBARboundaries <- txtProgressBar(min = 0, max = L_peaks, initial = 1, style = 3)
+      #
+      M_IDs <- do.call(rbind, lapply(1:L_peaks, function(k) {
+        setTxtProgressBar(progressBARboundaries, k)
+        ##
+        call_M_IDs2(k)
+      }))
+      close(progressBARboundaries)
+      print("Completed adjusting frequencies and ranks!")
+    }
+    ##
+    address_sav_IPDB <- PARAM[which(PARAM[, 1] == "PARAM0004"), 2]
+    print("Loading the isotopic profiles database!")
+    IPDB <- loadRdata(address_sav_IPDB)
+    MolVecList0 <- IPDB[[2]]
+    IPDB <- 0
+    Elements <- MolVecList0[[1]]
+    MolVecList_DB <- MolVecList0[[2]]
+    L_Elements <- length(Elements)
+    print("Initiated creating the aligned table!")
+    progressBARboundaries <- txtProgressBar(min = 0, max = N_candidate, initial = 1, style = 3)
+    #
+    aligned_molecular_formula <- do.call(cbind, lapply(1:N_candidate, function(k) {
+      setTxtProgressBar(progressBARboundaries, k)
+      ##
+      call_creating_aligned_table(k)
+    }))
+    close(progressBARboundaries)
+    print("Completed creating the aligned table!")
+    ##
+    print("Initiated processing the peak property table!")
+    progressBARboundaries <- txtProgressBar(min = 0, max = L_peaks, initial = 1, style = 3)
+    IPA_Xcol <- do.call(rbind, lapply(1:L_peaks, function(k) {
+      setTxtProgressBar(progressBARboundaries, k)
+      ##
+      c(peak_Xcol[k, 1:2], (length(which(peak_Xcol[k, ] > 0)) - 2))
+    }))
+    close(progressBARboundaries)
+    ##
+    progressBARboundaries <- txtProgressBar(min = 0, max = L_peaks, initial = 1, style = 3)
+    mz_rt_freq_median_peak_property <- do.call(rbind, lapply(1:L_peaks, function(k) {
+      setTxtProgressBar(progressBARboundaries, k)
+      ##
+      call_mz_rt_freq_median_peak_property(k)
+    }))
+    close(progressBARboundaries)
+    ##
+    title_mat <- do.call(cbind, lapply(1:N_candidate, function(k) {
+      cbind(paste0("IonFormula_", k), paste0("Frequency_", k), paste0("MedianRank_", k))
+    }))
+  } else {
+    osType <- Sys.info()[['sysname']]
+    ##
+    if (osType == "Linux") {
+      ##
+      print("Initiated matching peak IDs!")
+      MF_Zcol <- do.call(rbind, mclapply(1:L_samples, function(k) {
+        call_MF_Zcol(k)
+      }, mc.cores = number_processing_threads))
+      #
+      MF_Zcol <- MF_Zcol[order(MF_Zcol[, 1]), ]
+      x_peaks <- unique(c(0, which(diff(MF_Zcol[, 1]) > 0), dim(MF_Zcol)[1]))
+      u_peakid <- unique(MF_Zcol[, 1])
+      #
+      if (u_peakid[1] != 1) {
+        u_peakid <- c(1, u_peakid)
+        x_peaks <- c(x_peaks[1], x_peaks)
+      }
+      #
+      progressBARboundaries <- txtProgressBar(min = 0, max = L_peaks, initial = 1, style = 3)
+      for (k in 1:L_peaks) {
+        setTxtProgressBar(progressBARboundaries, k)
+        if (k > length(u_peakid)) {
+          u_peakid <- c(u_peakid, k)
+          x_peaks <- c(x_peaks, x_peaks[k])
+        } else {
+          if (u_peakid[k] != k) {
+            u_peakid <- append(u_peakid, k, after = (k - 1))
+            x_peaks <- append(x_peaks, x_peaks[k], after = (k - 1))
+          }
+        }
+      }
+      close(progressBARboundaries)
+      #
+      print("Completed matching peak IDs!")
+      ##
+      print("Initiated calculating median ranks!")
+      M_IDs <- do.call(rbind, mclapply(1:L_peaks, function(k) {
+        call_calculating_median_ranks(k)
+      }, mc.cores = number_processing_threads))
+      MF_Zcol <- 0
+      print("Completed calculating median ranks!")
+      ##
+      if (tolower(adjust_freq_rank) == "yes") {
+        print("Initiated adjusting frequencies and ranks!")
+        ##
+        freq_rank_table <- do.call(cbind, mclapply(1:N_candidate, function(k) {
+          call_freq_rank_table(k)
+        }, mc.cores = number_processing_threads))
+        #
+        freq_rank_table[is.nan(freq_rank_table)] <- 0
+        ##
+        M_IDs <- do.call(rbind, mclapply(1:L_peaks, function(k) {
+          call_M_IDs2(k)
+        }, mc.cores = number_processing_threads))
+        print("Completed adjusting frequencies and ranks!")
+      }
+      ##
+      address_sav_IPDB <- PARAM[which(PARAM[, 1] == "PARAM0004"), 2]
+      print("Loading the isotopic profiles database!")
+      IPDB <- loadRdata(address_sav_IPDB)
+      MolVecList0 <- IPDB[[2]]
+      IPDB <- 0
+      Elements <- MolVecList0[[1]]
+      MolVecList_DB <- MolVecList0[[2]]
+      L_Elements <- length(Elements)
+      print("Initiated creating the aligned table!")
+      aligned_molecular_formula <- do.call(cbind, mclapply(1:N_candidate, function(k) {
+        call_creating_aligned_table(k)
+      }, mc.cores = number_processing_threads))
+      print("Completed creating the aligned table!")
+      ##
+      print("Initiated processing the peak property table!")
+      ##
+      IPA_Xcol <- do.call(rbind, mclapply(1:L_peaks, function(k) {
+        c(peak_Xcol[k, 1:2], (length(which(peak_Xcol[k, ] > 0)) - 2))
+      }, mc.cores = number_processing_threads))
+      ##
+      mz_rt_freq_median_peak_property <- do.call(rbind, mclapply(1:L_peaks, function(k) {
+        call_mz_rt_freq_median_peak_property(k)
+      }, mc.cores = number_processing_threads))
+      ##
+      title_mat <- do.call(cbind, mclapply(1:N_candidate, function(k) {
+        cbind(paste0("IonFormula_", k), paste0("Frequency_", k), paste0("MedianRank_", k))
+      }, mc.cores = number_processing_threads))
+      ##
+      closeAllConnections()
+      ##
+    } else if (osType == "Windows") {
+      clust <- makeCluster(number_processing_threads)
+      registerDoParallel(clust)
+      ##
+      print("Initiated matching peak IDs!")
+      MF_Zcol <- foreach(k = 1:L_samples, .combine = 'rbind', .verbose = FALSE) %dopar% {
+        call_MF_Zcol(k)
+      }
+      #
+      MF_Zcol <- MF_Zcol[order(MF_Zcol[, 1]), ]
+      x_peaks <- unique(c(0, which(diff(MF_Zcol[, 1]) > 0), dim(MF_Zcol)[1]))
+      u_peakid <- unique(MF_Zcol[, 1])
+      #
+      if (u_peakid[1] != 1) {
+        u_peakid <- c(1, u_peakid)
+        x_peaks <- c(x_peaks[1], x_peaks)
+      }
+      #
+      progressBARboundaries <- txtProgressBar(min = 0, max = L_peaks, initial = 1, style = 3)
+      for (k in 1:L_peaks) {
+        setTxtProgressBar(progressBARboundaries, k)
+        if (k > length(u_peakid)) {
+          u_peakid <- c(u_peakid, k)
+          x_peaks <- c(x_peaks, x_peaks[k])
+        } else {
+          if (u_peakid[k] != k) {
+            u_peakid <- append(u_peakid, k, after = (k - 1))
+            x_peaks <- append(x_peaks, x_peaks[k], after = (k - 1))
+          }
+        }
+      }
+      close(progressBARboundaries)
+      #
+      print("Completed matching peak IDs!")
+      ##
+      print("Initiated calculating median ranks!")
       M_IDs <- foreach(k = 1:L_peaks, .combine = 'rbind', .verbose = FALSE) %dopar% {
-        call_M_IDs2(k)
+        call_calculating_median_ranks(k)
       }
-      print("Completed adjusting frequencies and ranks!")
-    }
-    ##
-    address_sav_IPDB <- PARAM[which(PARAM[, 1] == "PARAM0004"), 2]
-    print("Loading the isotopic profiles database!")
-    IPDB <- loadRdata(address_sav_IPDB)
-    MolVecList0 <- IPDB[[2]]
-    IPDB <- 0
-    Elements <- MolVecList0[[1]]
-    MolVecList_DB <- MolVecList0[[2]]
-    L_Elements <- length(Elements)
-    print("Initiated creating the aligned table!")
-    aligned_molecular_formula <- foreach(k = 1:N_candidate, .combine = 'cbind', .verbose = FALSE) %dopar% {
-      call_creating_aligned_table(k)
-    }
-    print("Completed creating the aligned table!")
-    ##
-    print("Initiated processing the peak property table!")
-    ##
-    IPA_Xcol <- foreach(k = 1:L_peaks, .combine = 'rbind', .verbose = FALSE) %dopar% {
-      c(peak_Xcol[k, 1:2], (length(which(peak_Xcol[k, ] > 0)) - 2))
-    }
-    ##
-    mz_rt_freq_median_peak_property <- foreach(k = 1:L_peaks, .combine = 'rbind', .verbose = FALSE) %dopar% {
-      call_mz_rt_freq_median_peak_property(k)
-    }
-    ##
-    title_mat <-  foreach(k = 1:N_candidate, .combine = 'cbind', .verbose = FALSE) %dopar% {
-      cbind(paste0("IonFormula_", k), paste0("Frequency_", k), paste0("MedianRank_", k))
-    }
-    ##
-    stopCluster(clust)
-  }
-  if (osType == "Linux") {
-    ##
-    for (i in 1:L_samples) {
-      setTxtProgressBar(progressBARboundaries, i)
+      MF_Zcol <- 0
+      print("Completed calculating median ranks!")
       ##
-      peak_table_id <- peak_Xcol[, (i + 2)]
-      MolecularFormulaAnnotationTable <- loadRdata(paste0(output_path_annotated_mf_tables, "/", mf_table_list[i]))
-      matched_peak_ids <- as.numeric(MolecularFormulaAnnotationTable[, 1])
-      matched_mf_ids <- as.numeric(MolecularFormulaAnnotationTable[, 2])
-      x_peak_ids <- which(peak_table_id%in%unique(matched_peak_ids) == TRUE)
-      L_x_peak_ids <- length(x_peak_ids)
-      ##
-      if (L_x_peak_ids > 0) {
-        mjx <- mclapply(x_peak_ids, function(j) {
-          x_j <- which(matched_peak_ids == peak_table_id[j])
-          matched_mf_ids[x_j]
-        }, mc.cores = number_processing_threads)
+      if (tolower(adjust_freq_rank) == "yes") {
+        print("Initiated adjusting frequencies and ranks!")
         ##
-        for (j in 1:L_x_peak_ids) {
-          x_mf_id <- mjx[[j]]
-          max_k <- min(c(N_top_candidates, length(x_mf_id)))
-          for (k in 1:max_k) {
-            MF_Zcol[k, x_peak_ids[j], i] <- x_mf_id[k]
-          }
+        freq_rank_table <- foreach(k = 1:N_candidate, .combine = 'cbind', .verbose = FALSE) %dopar% {
+          call_freq_rank_table(k)
         }
+        #
+        freq_rank_table[is.nan(freq_rank_table)] <- 0
+        ##
+        M_IDs <- foreach(k = 1:L_peaks, .combine = 'rbind', .verbose = FALSE) %dopar% {
+          call_M_IDs2(k)
+        }
+        print("Completed adjusting frequencies and ranks!")
       }
-    }
-    close(progressBARboundaries)
-    print("Completed matching peak IDs!")
-    ##
-    print("Initiated calculating median ranks!")
-    M_IDs <- do.call(rbind, mclapply(1:L_peaks, function (k) {
-      call_calculating_median_ranks(k)
-    }, mc.cores = number_processing_threads))
-    MF_Zcol <- 0
-    print("Completed calculating median ranks!")
-    ##
-    if (tolower(adjust_freq_rank) == "yes") {
-      print("Initiated adjusting frequencies and ranks!")
       ##
-      freq_rank_table <- do.call(cbind, mclapply(1:N_candidate, function (k) {
-        call_freq_rank_table(k)
-      }, mc.cores = number_processing_threads))
-      #
-      freq_rank_table[is.nan(freq_rank_table)] <- 0
+      address_sav_IPDB <- PARAM[which(PARAM[, 1] == "PARAM0004"), 2]
+      print("Loading the isotopic profiles database!")
+      IPDB <- loadRdata(address_sav_IPDB)
+      MolVecList0 <- IPDB[[2]]
+      IPDB <- 0
+      Elements <- MolVecList0[[1]]
+      MolVecList_DB <- MolVecList0[[2]]
+      L_Elements <- length(Elements)
+      print("Initiated creating the aligned table!")
+      aligned_molecular_formula <- foreach(k = 1:N_candidate, .combine = 'cbind', .verbose = FALSE) %dopar% {
+        call_creating_aligned_table(k)
+      }
+      print("Completed creating the aligned table!")
       ##
-      M_IDs <- do.call(rbind, mclapply(1:L_peaks, function (k) {
-        call_M_IDs2(k)
-      }, mc.cores = number_processing_threads))
-      print("Completed adjusting frequencies and ranks!")
+      print("Initiated processing the peak property table!")
+      ##
+      IPA_Xcol <- foreach(k = 1:L_peaks, .combine = 'rbind', .verbose = FALSE) %dopar% {
+        c(peak_Xcol[k, 1:2], (length(which(peak_Xcol[k, ] > 0)) - 2))
+      }
+      ##
+      mz_rt_freq_median_peak_property <- foreach(k = 1:L_peaks, .combine = 'rbind', .verbose = FALSE) %dopar% {
+        call_mz_rt_freq_median_peak_property(k)
+      }
+      ##
+      title_mat <-  foreach(k = 1:N_candidate, .combine = 'cbind', .verbose = FALSE) %dopar% {
+        cbind(paste0("IonFormula_", k), paste0("Frequency_", k), paste0("MedianRank_", k))
+      }
+      ##
+      stopCluster(clust)
     }
-    ##
-    address_sav_IPDB <- PARAM[which(PARAM[, 1] == "PARAM0004"), 2]
-    print("Loading the isotopic profiles database!")
-    IPDB <- loadRdata(address_sav_IPDB)
-    MolVecList0 <- IPDB[[2]]
-    IPDB <- 0
-    Elements <- MolVecList0[[1]]
-    MolVecList_DB <- MolVecList0[[2]]
-    L_Elements <- length(Elements)
-    print("Initiated creating the aligned table!")
-    aligned_molecular_formula <- do.call(cbind, mclapply(1:N_candidate, function (k) {
-      call_creating_aligned_table(k)
-    }, mc.cores = number_processing_threads))
-    print("Completed creating the aligned table!")
-    ##
-    print("Initiated processing the peak property table!")
-    ##
-    IPA_Xcol <- do.call(rbind, mclapply(1:L_peaks, function (k) {
-      c(peak_Xcol[k, 1:2], (length(which(peak_Xcol[k, ] > 0)) - 2))
-    }, mc.cores = number_processing_threads))
-    ##
-    mz_rt_freq_median_peak_property <- do.call(rbind, mclapply(1:L_peaks, function (k) {
-      call_mz_rt_freq_median_peak_property(k)
-    }, mc.cores = number_processing_threads))
-    ##
-    title_mat <- do.call(cbind, mclapply(1:N_candidate, function(k) {
-      cbind(paste0("IonFormula_", k), paste0("Frequency_", k), paste0("MedianRank_", k))
-    }, mc.cores = number_processing_threads))
-    ##
-    closeAllConnections()
   }
   ##
   aligned_molecular_formula <- data.frame(cbind(IPA_Xcol, mz_rt_freq_median_peak_property, aligned_molecular_formula))

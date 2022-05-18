@@ -67,13 +67,13 @@ UFA_workflow <- function(spreadsheet) {
       minPCS <- as.numeric(PARAM[which(PARAM[, 1] == "PARAM0018"), 2])
       minNDCS <- as.numeric(PARAM[which(PARAM[, 1] == "PARAM0019"), 2])
       minRCS <- as.numeric(PARAM[which(PARAM[, 1] == "PARAM0020"), 2])
-      Score_coeff <- eval(parse(text = PARAM[which(PARAM[, 1] == 'PARAM0021'), 2]))
+      Score_coeff <- tryCatch(eval(parse(text = PARAM[which(PARAM[, 1] == 'PARAM0021'), 2])), error = function(e){NA})
       ##
       MF_library_search_TRUE <- FALSE
       x0022 <- PARAM[which(PARAM[, 1] == 'PARAM0022'), 2]
       if (tolower(x0022) == "yes") {
         MF_library_search_TRUE <- TRUE
-        IonPathways <- eval(parse(text = PARAM[which(PARAM[, 1] == 'PARAM0023'), 2]))
+        IonPathways <- tryCatch(eval(parse(text = PARAM[which(PARAM[, 1] == 'PARAM0023'), 2])), error = function(e){NA})
         ##
         x0024 <- PARAM[which(PARAM[, 1] == 'PARAM0024'), 2]
         MF_library <- loadRdata(x0024)
@@ -111,13 +111,13 @@ UFA_workflow <- function(spreadsheet) {
         osType <- Sys.info()[['sysname']]
         if (osType == "Windows") {
           clust <- makeCluster(NPT0)
-          registerDoSNOW(clust)
+          registerDoParallel(clust)
           null_variable <- foreach(k = 1:L_PL, .verbose = FALSE) %dopar% {
             call_molecular_formula_annotation(k)
           }
           stopCluster(clust)
-        }
-        if (osType == "Linux") {
+          ##
+        } else if (osType == "Linux") {
           null_variable <- mclapply(1:L_PL, function (k) {
             call_molecular_formula_annotation(k)
           }, mc.cores = NPT0)
@@ -145,7 +145,7 @@ UFA_workflow <- function(spreadsheet) {
       PARAM_SA <- UFA_profile_visualizer_xlsxAnalyzer(spreadsheet)
       AnnotatedSpectraTable <- UFA_profile_visualizer(PARAM_SA)
       ##
-      exportedAnnotatedSpectraTable <- if (tolower(PARAM_SA[which(PARAM_SA[, 1] == 'SA0011'), 2]) == "yes") {TRUE} else {FALSE}
+      exportedAnnotatedSpectraTable <- ifelse((tolower(PARAM_SA[which(PARAM_SA[, 1] == 'SA0011'), 2]) == "yes"), TRUE, FALSE)
       if (exportedAnnotatedSpectraTable) {
         output_path <- PARAM_SA[which(PARAM_SA[, 1] == 'PARAM0014'), 2]
         save(AnnotatedSpectraTable, file = paste0(output_path, "/AnnotatedSpectraTable.Rdata"))
@@ -155,4 +155,5 @@ UFA_workflow <- function(spreadsheet) {
     required_time <- Sys.time() - initiation_time
     print(required_time)
   }
+  return()
 }

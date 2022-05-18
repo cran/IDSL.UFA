@@ -149,15 +149,15 @@ zero_score_function <- function(PARAM_SFT) {
   ##
   if (osType == "Windows") {
     clust <- makeCluster(NPT)
-    registerDoSNOW(clust)
+    registerDoParallel(clust)
     ##
     MolVecMatList <- foreach(k = 1:L_Molf, .combine = 'rbind', .verbose = FALSE) %dopar% {
       MolVecMatList_call(k)
     }
     ##
     stopCluster(clust)
-  }
-  if (osType == "Linux") {
+    ##
+  } else if (osType == "Linux") {
     ##
     MolVecMatList <- do.call(rbind, mclapply(1:L_Molf, function(k) {
       MolVecMatList_call(k)
@@ -192,15 +192,15 @@ zero_score_function <- function(PARAM_SFT) {
   print("Initiated producing the unoptimized list of candidate molecular formulas!")
   if (osType == "Windows") {
     clust <- makeCluster(NPT)
-    registerDoSNOW(clust)
+    registerDoParallel(clust)
     ##
     Entire_final_list_unoptimized <- foreach(i = 1:L_PL, .combine = 'rbind', .verbose = FALSE) %dopar% {
       Entire_final_list_unoptimized_call(i)
     }
     ##
     stopCluster(clust)
-  }
-  if (osType == "Linux") {
+    ##
+  } else if (osType == "Linux") {
     Entire_final_list_unoptimized <- do.call(rbind, mclapply(1:L_PL, function (i) {
       Entire_final_list_unoptimized_call(i)
     }, mc.cores = NPT))

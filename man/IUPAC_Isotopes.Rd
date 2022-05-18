@@ -12,9 +12,9 @@ This data consists of element, mass, abundance and valence of 289 stable isotope
   A data frame with 289 observations on the following 4 variables.
   \describe{
     \item{\code{element}}{a character vector}
-    \item{\code{mass}}{a character vector}
-    \item{\code{abundance}}{a character vector}
-    \item{\code{valence}}{a character vector}
+    \item{\code{mass}}{a numerical vector}
+    \item{\code{abundance}}{a numerical vector}
+    \item{\code{valence}}{a numerical vector}
   }
 }
 \references{

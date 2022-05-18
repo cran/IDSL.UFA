@@ -21,7 +21,7 @@ element_sorter <- function(ElementList = "all", ElementOrder = "alphabetical") {
   valence <- rep(0, L_Elements)
   for (i in 1:L_Elements) {
     x_el <- which(NonUniElements == Elements[i])
-    Elements_mass_abundance[[i]] <- list(as.numeric(IUPAC_Isotopes$mass[x_el]), as.numeric(IUPAC_Isotopes$abundance[x_el]))
+    Elements_mass_abundance[[i]] <- list(IUPAC_Isotopes$mass[x_el], IUPAC_Isotopes$abundance[x_el])
     valence[i] <- Valence_EL[x_el[1]]
   }
   ElementList <- list(OutputElements, Elements_mass_abundance, valence)

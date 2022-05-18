@@ -88,13 +88,13 @@ molecular_formula_annotator <- function(IPDB, spectraList, peaklist, mass_accura
       osType <- Sys.info()[['sysname']]
       if (osType == "Windows") {
         clust <- makeCluster(number_processing_threads)
-        registerDoSNOW(clust)
+        registerDoParallel(clust)
         mzList <- foreach(k = 1:n_peaks, .combine = 'rbind', .verbose = FALSE) %dopar% {
           molecular_formula_annotator_call(k)
         }
         stopCluster(clust)
-      }
-      if (osType == "Linux") {
+        ##
+      } else if (osType == "Linux") {
         mzList <- do.call(rbind, mclapply(1:n_peaks, function(k) {
           molecular_formula_annotator_call(k)
         }, mc.cores = number_processing_threads))

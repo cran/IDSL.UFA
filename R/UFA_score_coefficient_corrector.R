@@ -46,15 +46,15 @@ UFA_score_coefficient_corrector <- function(input_annotated_molf_address, output
   ##
   if (osType == "Windows") {
     clust <- makeCluster(number_processing_threads)
-    registerDoSNOW(clust)
+    registerDoParallel(clust)
     ##
     null_var <- foreach(k = 1:length(file_names), .combine = 'rbind', .verbose = FALSE) %dopar% {
       null_var_call(k)
     }
     ##
     stopCluster(clust)
-  }
-  if (osType == "Linux") {
+    ##
+  } else if (osType == "Linux") {
     ##
     null_var <- do.call(rbind, mclapply(1:length(file_names), function(k) {
       null_var_call(k)

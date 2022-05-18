@@ -1,5 +1,4 @@
-UFA_profile_visualizer_xlsxAnalyzer <- function (spreadsheet)
-{
+UFA_profile_visualizer_xlsxAnalyzer <- function (spreadsheet) {
   checkpoint_parameter <- FALSE
   if (length(spreadsheet) >= 4) {
     if (typeof(spreadsheet) == "list") {
@@ -64,7 +63,7 @@ UFA_profile_visualizer_xlsxAnalyzer <- function (spreadsheet)
           print("ERROR!!! Problem with PARAM0012!")
           checkpoint_parameter <- FALSE
         } else {
-          if (tolower(x0012) == "mzml" | tolower(x0012) == "mzxml") {
+          if (tolower(x0012) == "mzml" | tolower(x0012) == "mzxml" | tolower(x0012) == "cdf") {
             cat("\n")
           } else {
             print("ERROR!!! Problem with PARAM0012! HRMS data are incompatible!")
@@ -108,13 +107,13 @@ UFA_profile_visualizer_xlsxAnalyzer <- function (spreadsheet)
         }
       }
     }
-    xsa0001 <- eval(parse(text = paste0("c(", PARAM_SA[which(PARAM_SA[, 1] == "SA0001"), 2], ")")))
-    if (length(xsa0001) == 0) {
+    xsa0001 <- tryCatch(eval(parse(text = paste0("c(", PARAM_SA[which(PARAM_SA[, 1] == "SA0001"), 2], ")"))), error = function(e){NA})
+    if ((length(xsa0001) == 0) | is.na(xsa0001[1])) {
       print("ERROR!!! Problem with SA0001!")
       checkpoint_parameter <- FALSE
     }
-    xsa0002 <- eval(parse(text = paste0("c(", PARAM_SA[which(PARAM_SA[, 1] == "SA0002"), 2], ")")))
-    if (length(xsa0002) == 0) {
+    xsa0002 <- tryCatch(eval(parse(text = paste0("c(", PARAM_SA[which(PARAM_SA[, 1] == "SA0002"), 2], ")"))), error = function(e){NA})
+    if ((length(xsa0002) == 0) | is.na(xsa0002[1])) {
       print("ERROR!!! Problem with SA0002!")
       checkpoint_parameter <- FALSE
     }
@@ -132,8 +131,8 @@ UFA_profile_visualizer_xlsxAnalyzer <- function (spreadsheet)
         checkpoint_parameter <- FALSE
       }
     }
-    xsa0004 <- eval(parse(text = paste0("c(", PARAM_SA[which(PARAM_SA[, 1] == "SA0004"), 2], ")")))
-    if (length(xsa0002) == 0) {
+    xsa0004 <- tryCatch(eval(parse(text = paste0("c(", PARAM_SA[which(PARAM_SA[, 1] == "SA0004"), 2], ")"))), error = function(e){NA})
+    if ((length(xsa0002) == 0) | is.na(xsa0004[1])) {
       print("ERROR!!! Problem with SA0004!")
       checkpoint_parameter <- FALSE
     }
@@ -152,8 +151,8 @@ UFA_profile_visualizer_xlsxAnalyzer <- function (spreadsheet)
       print("ERROR!!! Problem with SA0006!")
       checkpoint_parameter <- FALSE
     }
-    SA0007 <- eval(parse(text = paste0("c(", PARAM_SA[which(PARAM_SA[, 1] == "SA0007"), 2], ")")))
-    if (length(SA0007) != 2) {
+    SA0007 <- tryCatch(eval(parse(text = paste0("c(", PARAM_SA[which(PARAM_SA[, 1] == "SA0007"), 2], ")"))), error = function(e){NA})
+    if ((length(SA0007) != 2) | is.na(SA0007[1])) {
       print("ERROR!!! Problem with SA0008! This parameter should be a vector of two positive numbers!")
       checkpoint_parameter <- FALSE
     }

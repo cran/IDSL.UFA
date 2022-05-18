@@ -233,7 +233,7 @@ UFA_profile_visualizer <- function(PARAM_SA) {
     osType <- Sys.info()[['sysname']]
     if (osType == "Windows") {
       clust <- makeCluster(number_processing_threads)
-      registerDoSNOW(clust)
+      registerDoParallel(clust)
       ##
       IsotopicProfile_DataBase <- foreach(counter = 1:L_MoleFormVecMat, .verbose = FALSE) %dopar% {
         IP_calculator(counter)
@@ -251,8 +251,8 @@ UFA_profile_visualizer <- function(PARAM_SA) {
         SpectraAnalysis_call(counter)
       }
       stopCluster(clust)
-    }
-    if (osType == "Linux") {
+      ##
+    } else if (osType == "Linux") {
       ##
       IsotopicProfile_DataBase <- mclapply(1:L_MoleFormVecMat, function (counter) {
         IP_calculator(counter)

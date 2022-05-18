@@ -292,7 +292,7 @@ UFA_enumerated_chemical_space <- function(PARAM_MF) {
   osType <- Sys.info()[['sysname']]
   if (osType == "Windows") {
     clust <- makeCluster(number_processing_threads)
-    registerDoSNOW(clust)
+    registerDoParallel(clust)
     ##
     print("Initiated calculating isotopic profiles for essential elements!")
     Ess_MolVecMat <- foreach(c = c_xyz1:c_xyz2, .combine = 'rbind', .verbose = FALSE) %dopar% {
@@ -366,8 +366,8 @@ UFA_enumerated_chemical_space <- function(PARAM_MF) {
     }
     ##
     stopCluster(clust)
-  }
-  if (osType == "Linux") {
+    ##
+  } else if (osType == "Linux") {
     ##
     print("Initiated calculating isotopic profiles for essential elements!")
     Ess_MolVecMat <- do.call(rbind, mclapply(c_xyz1:c_xyz2, function(c) {
@@ -435,7 +435,7 @@ UFA_enumerated_chemical_space <- function(PARAM_MF) {
     x_IP <- unique(c(0, which(diff(MolVecMat[, L_ElementsAlphabetical_1]) > 0), L_MolVecMat))
     #
     L_IP_combination <- length(x_IP) - 1
-    ID_IP <- do.call(rbind, mclapply(2:(L_IP_combination + 1), function (counter) {
+    ID_IP <- do.call(rbind, mclapply(2:(L_IP_combination + 1), function(counter) {
       row_number_first <- (x_IP[counter - 1] + 1)
       c(row_number_first, x_IP[counter], MolVecMat[row_number_first, L_ElementsAlphabetical_1])
     }, mc.cores = number_processing_threads))
@@ -446,7 +446,7 @@ UFA_enumerated_chemical_space <- function(PARAM_MF) {
   MolVecMat <- matrix(MolVecMat[, -L_ElementsAlphabetical_1], ncol = L_ElementsAlphabetical)
   ##
   progressBARboundaries <- txtProgressBar(min = 1, max = L_IP_combination, initial = 1, style = 3)
-  ip_export <- lapply(1:L_IP_combination, function (i) {
+  ip_export <- lapply(1:L_IP_combination, function(i) {
     setTxtProgressBar(progressBARboundaries, i)
     counter <- ID_IP[i, 3]
     Counter_IP <- 0
@@ -462,12 +462,13 @@ UFA_enumerated_chemical_space <- function(PARAM_MF) {
         Counter_IP <- Counter_IP + 1
         IP_mass <- round(IP_mass, 6)
         IP <- cbind(IP_mass, IP_profile)
-        counter_ip_export[[Counter_IP]] <- list(ipl = j, ipm = IP_mass[x_100], ipp= IP, r13c = r13c_ip, i_100 = x_100, lip = L_IPP)
+        counter_ip_export[[Counter_IP]] <- list(ipl = j, ipm = IP_mass[x_100], ipp = IP, r13c = r13c_ip, i_100 = x_100, lip = L_IPP)
       }
     }
     counter_ip_export
   })
   close(progressBARboundaries)
+  Ess_IP <- c()
   NoNEss_mass <- 0
   ip_export <- unlist(ip_export, recursive = FALSE)
   L_ip_export <- length(ip_export)
@@ -475,9 +476,9 @@ UFA_enumerated_chemical_space <- function(PARAM_MF) {
   ##############################################################################
   gc()
   ##
-  xMolVecMat <- sapply(1:L_ip_export, function(x) {
+  xMolVecMat <- do.call(c, lapply(1:L_ip_export, function(x) {
     ip_export[[x]]$ipl
-  })
+  }))
   MolVecMat <- matrix(MolVecMat[xMolVecMat, ], ncol = L_ElementsAlphabetical)
   #
   x_element_non0 <- do.call(rbind, lapply(1:L_ElementsAlphabetical, function(counter) {
@@ -489,31 +490,34 @@ UFA_enumerated_chemical_space <- function(PARAM_MF) {
   #
   IP_library <- list(Elements = ElementsAlphabetical[x_element_non0], MolVecMat[, x_element_non0])
   MolVecMat <- 0
+  names(IP_library) <- c("Elements", "MolecularFormulaMatrix")
   ##
-  IP_Mass <- sapply(1:L_ip_export, function(x) {
+  IP_Mass <- do.call(c, lapply(1:L_ip_export, function(x) {
     ip_export[[x]]$ipm
-  })
+  }))
   ##
   IsotopicProfile <- lapply(1:L_ip_export, function(x) {
     ip_export[[x]]$ipp
   })
   ##
-  R13C_IP <- sapply(1:L_ip_export, function(x) {
+  R13C_IP <- do.call(c, lapply(1:L_ip_export, function(x) {
     ip_export[[x]]$r13c
-  })
+  }))
   ##
-  Index_MAIso <- sapply(1:L_ip_export, function(x) {
+  Index_MAIso <- do.call(c, lapply(1:L_ip_export, function(x) {
     ip_export[[x]]$i_100
-  })
+  }))
   ##
-  IP_size <- sapply(1:L_ip_export, function(x) {
+  IP_size <- do.call(c, lapply(1:L_ip_export, function(x) {
     ip_export[[x]]$lip
-  })
+  }))
   ##
-  print("Completed creating the isotopic profile database!")
   ip_export <- 0
+  print("Completed creating the isotopic profile database!")
+  ##
   PARAM_MF$`User input 2`[x_address_IPDB] <- NA
   IPDB <- list(IP_Mass, IP_library, IsotopicProfile, R13C_IP, Index_MAIso, IP_size, PARAM_MF)
+  names(IPDB) <- c("MassMAIso", "MolecularFormulaDB", "IsotopicProfile", "R13C", "IndexMAIso", "IPsize", "logIPDB")
   print("Initiated saving the isotopic profile database!")
   save(IPDB, file = address_IPDB)
   #

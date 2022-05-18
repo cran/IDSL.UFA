@@ -34,15 +34,15 @@ detect_formula_sets  <- function(molecular_formulas, ratio_delta_HBrClFI_C, mixe
     ##
     if (osType == "Windows") {
       clust <- makeCluster(number_processing_threads)
-      registerDoSNOW(clust)
+      registerDoParallel(clust)
       ##
       molecular_formulasMat <- foreach(k = 1:length(molecular_formulas), .combine = 'rbind', .verbose = FALSE) %dopar% {
         molecular_formulasMat_call(k)
       }
       ##
       stopCluster(clust)
-    }
-    if (osType == "Linux") {
+      ##
+    } else if (osType == "Linux") {
       ##
       molecular_formulasMat <- do.call(rbind, mclapply(1:length(molecular_formulas), function (k) {
         molecular_formulasMat_call(k)
@@ -218,7 +218,7 @@ detect_formula_sets  <- function(molecular_formulas, ratio_delta_HBrClFI_C, mixe
   } else {
     if (osType == "Windows") {
       clust <- makeCluster(number_processing_threads)
-      registerDoSNOW(clust)
+      registerDoParallel(clust)
       ##
       I <- foreach(k = 1:length(unique_molecular_formulas1), .verbose = FALSE) %dopar% {
         I_call(k)
@@ -236,8 +236,8 @@ detect_formula_sets  <- function(molecular_formulas, ratio_delta_HBrClFI_C, mixe
       }
       ##
       stopCluster(clust)
-    }
-    if (osType == "Linux") {
+      ##
+    } else if (osType == "Linux") {
       ##
       I <-  mclapply(1:length(unique_molecular_formulas1), function (k) {
         I_call(k)

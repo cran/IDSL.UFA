@@ -79,7 +79,7 @@ isotopic_profile_molecular_formula_feeder <- function(molecular_formula, peak_sp
   osType <- Sys.info()[['sysname']]
   if (osType == "Windows") {
     clust <- makeCluster(number_processing_threads)
-    registerDoSNOW(clust)
+    registerDoParallel(clust)
     ##
     print("Initiated deconvoluting molecular formulas!")
     MoleFormVecMat <- foreach(counter = 1:L_MolF, .combine = 'rbind', .verbose = FALSE) %dopar% {
@@ -106,8 +106,8 @@ isotopic_profile_molecular_formula_feeder <- function(molecular_formula, peak_sp
     print("Completed calculating the database parameters!")
     ##
     stopCluster(clust)
-  }
-  if (osType == "Linux") {
+    ##
+  } else if (osType == "Linux") {
     ##
     print("Initiated deconvoluting molecular formulas!")
     MoleFormVecMat <- do.call(rbind, mclapply(1:L_MolF, function (counter) {
@@ -136,7 +136,7 @@ isotopic_profile_molecular_formula_feeder <- function(molecular_formula, peak_sp
     closeAllConnections()
   }
   ##############################################################################
-  x_element_non0 <- do.call(rbind, lapply(1:L_Elements, function(counter) {
+  x_element_non0 <- do.call(c, lapply(1:L_Elements, function(counter) {
     x_non0 <- which(MoleFormVecMat[, counter] > 0)
     if (length(x_non0) > 0) {
       counter
@@ -144,6 +144,8 @@ isotopic_profile_molecular_formula_feeder <- function(molecular_formula, peak_sp
   }))
   #
   IP_library <- list(Elements = Elements[x_element_non0], MoleFormVecMat[, x_element_non0])
+  MoleFormVecMat <- 0
+  names(IP_library) <- c("Elements", "MolecularFormulaMatrix")
   ##
   ip_db_mat <- matrix(ip_db_mat, ncol = 4)
   IP_Mass <- ip_db_mat[, 1]

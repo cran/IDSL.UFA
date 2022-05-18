@@ -21,6 +21,7 @@ molecular_formulas_source_IPDB <- function(PARAM_SF) {
   PARAM_SF[x_csv_file, 2] <- NA
   PARAM_SF[x_address_IPDB, 2] <- NA
   IPDB <- c(IPDB, list(PARAM_SF))
+  names(IPDB) <- c("MassMAIso", "MolecularFormulaDB", "IsotopicProfile", "R13C", "IndexMAIso", "IPsize", "logIPDB")
   ##
   print("Initiated saving the isotopic profile database")
   save(IPDB, file = address_IPDB)

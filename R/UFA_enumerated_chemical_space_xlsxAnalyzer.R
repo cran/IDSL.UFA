@@ -284,7 +284,7 @@ UFA_enumerated_chemical_space_xlsxAnalyzer <- function(PARAM_MF) {
   osType <- Sys.info()[['sysname']]
   if (osType == "Windows") {
     clust <- makeCluster(number_processing_threads)
-    registerDoSNOW(clust)
+    registerDoParallel(clust)
     ##
     print("Initiated counting essential elements combinations!")
     Ess_MolVecMat <- foreach(c = c_xyz1:c_xyz2, .combine = 'rbind', .verbose = FALSE) %dopar% {
@@ -302,8 +302,8 @@ UFA_enumerated_chemical_space_xlsxAnalyzer <- function(PARAM_MF) {
     L_MolVecMat <- dim(MolVecMat)[1]
     ##
     stopCluster(clust)
-  }
-  if (osType == "Linux") {
+    ##
+  } else if (osType == "Linux") {
     ##
     print("Initiated counting essential elements combinations!")
     Ess_MolVecMat <- do.call(rbind, mclapply(c_xyz1:c_xyz2, function(c) {

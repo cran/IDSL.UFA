@@ -45,15 +45,15 @@ hill_molecular_formula_printer <- function(Elements, MolVecMat, number_processin
     osType <- Sys.info()[['sysname']]
     if (osType == "Windows") {
       clust <- makeCluster(number_processing_threads)
-      registerDoSNOW(clust)
+      registerDoParallel(clust)
       ##
       MolFormList <-  foreach(k = 1:dim(MolVecMat)[1], .combine = 'rbind', .verbose = FALSE) %dopar% {
         MolFormList_call(k)
       }
       ##
       stopCluster(clust)
-    }
-    if (osType == "Linux") {
+      ##
+    } else if (osType == "Linux") {
       ##
       MolFormList <- do.call(rbind, mclapply(1:dim(MolVecMat)[1], function(k) {
         MolFormList_call(k)

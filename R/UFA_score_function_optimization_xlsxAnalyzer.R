@@ -9,7 +9,7 @@ UFA_score_function_optimization_xlsxAnalyzer <- function(spreadsheet) {
     }
   } else if (length(spreadsheet) == 1) {
     if (typeof(spreadsheet) == "character") {
-      if (file.exists(spreadsheet)){
+      if (file.exists(spreadsheet)) {
         spreadsheet_UFA <- readxl::read_xlsx(spreadsheet, sheet = "score_function_optimization")
         PARAM_SFT <- cbind(spreadsheet_UFA[, 2], spreadsheet_UFA[, 4])
         checkpoint_parameter <- TRUE
@@ -140,7 +140,7 @@ UFA_score_function_optimization_xlsxAnalyzer <- function(spreadsheet) {
             print("ERROR!!! Problem with SFT0008!")
             checkpoint_parameter <- 0
           } else {
-            if (tolower(x0008) == "mzml" | tolower(x0008) == "mzxml") {
+            if (tolower(x0008) == "mzml" | tolower(x0008) == "mzxml" | tolower(x0008) == "cdf") {
               cat("\n")
             } else {
               print("ERROR!!! Problem with SFT0008! HRMS data are incompatible!")
@@ -197,7 +197,7 @@ UFA_score_function_optimization_xlsxAnalyzer <- function(spreadsheet) {
         output_path <- gsub("\\", "/", PARAM_SFT[x0010, 2], fixed = TRUE)
         PARAM_SFT[x0010, 2] <- output_path
         if (!dir.exists(output_path)) {
-          tryCatch(dir.create(output_path))
+          tryCatch(dir.create(output_path), error = function(e){print("")})
           if (!dir.exists(output_path)) {
             print("ERROR!!! Problem with SFT0010! R can only create one folder!")
             checkpoint_parameter <- 0
@@ -346,8 +346,8 @@ UFA_score_function_optimization_xlsxAnalyzer <- function(spreadsheet) {
     if (tolower(x0003) == "yes") {
       checkpoint_parameter <- SFT_function_obj_func_test(PARAM_SFT, checkpoint_parameter)
       ##
-      SFT0020 <- eval(parse(text = PARAM_SFT[which(PARAM_SFT[, 1] == 'SFT0020'), 2]))
-      if (is.null(SFT0020)) {
+      SFT0020 <- tryCatch(eval(parse(text = PARAM_SFT[which(PARAM_SFT[, 1] == 'SFT0020'), 2])), error = function(e){NA})
+      if (is.na(SFT0020[1])) {
         print("ERROR!!! Problem with SFT0020! This parameter should be a vector of five positive numbers!")
         checkpoint_parameter <- 0
       } else {
@@ -357,8 +357,8 @@ UFA_score_function_optimization_xlsxAnalyzer <- function(spreadsheet) {
         }
       }
       ##
-      SFT0021 <- eval(parse(text = PARAM_SFT[which(PARAM_SFT[, 1] == 'SFT0021'), 2]))
-      if (is.null(SFT0021)) {
+      SFT0021 <- tryCatch(eval(parse(text = PARAM_SFT[which(PARAM_SFT[, 1] == 'SFT0021'), 2])), error = function(e){NA})
+      if (is.na(SFT0021[1])) {
         print("ERROR!!! Problem with SFT0021! This parameter should be a vector of five positive numbers!")
         checkpoint_parameter <- 0
       } else {
