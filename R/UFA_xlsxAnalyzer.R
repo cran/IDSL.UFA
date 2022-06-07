@@ -30,9 +30,7 @@ UFA_xlsxAnalyzer <- function(spreadsheet) {
       checkpoint_parameter <- FALSE
       x0001 <- 0
     } else {
-      if (tolower(x0001) == "yes" | tolower(x0001) == "no") {
-        cat("\n")
-      } else {
+      if (!(tolower(x0001) == "yes" | tolower(x0001) == "no")) {
         print("ERROR!!! Problem with PARAM0001!")
         checkpoint_parameter <- FALSE
       }
@@ -44,9 +42,7 @@ UFA_xlsxAnalyzer <- function(spreadsheet) {
         checkpoint_parameter <- FALSE
         x0002 <- 0
       } else {
-        if (tolower(x0002) == "yes" | tolower(x0002) == "no") {
-          cat("\n")
-        } else {
+        if (!(tolower(x0002) == "yes" | tolower(x0002) == "no")) {
           print("ERROR!!! Problem with PARAM0003!")
           checkpoint_parameter <- FALSE
         }
@@ -58,9 +54,7 @@ UFA_xlsxAnalyzer <- function(spreadsheet) {
         checkpoint_parameter <- FALSE
         x0003 <- 0
       } else {
-        if (tolower(x0003) == "yes" | tolower(x0003) == "no") {
-          cat("\n")
-        } else {
+        if (!(tolower(x0003) == "yes" | tolower(x0003) == "no")) {
           print("ERROR!!! Problem with PARAM0003!")
           checkpoint_parameter <- FALSE
         }
@@ -96,9 +90,7 @@ UFA_xlsxAnalyzer <- function(spreadsheet) {
       print("ERROR!!! Problem with PARAM0005!")
       checkpoint_parameter <- FALSE
     } else {
-      if (tolower(x0005) == "yes" | tolower(x0005) == "no") {
-        cat("\n")
-      } else {
+      if (!(tolower(x0005) == "yes" | tolower(x0005) == "no")) {
         print("ERROR!!! Problem with PARAM0005!")
         checkpoint_parameter <- FALSE
       }
@@ -108,9 +100,7 @@ UFA_xlsxAnalyzer <- function(spreadsheet) {
       print("ERROR!!! Problem with PARAM0006!")
       checkpoint_parameter <- FALSE
     } else {
-      if (tolower(x0006) == "yes" | tolower(x0006) == "no") {
-        cat("\n")
-      } else {
+      if (!(tolower(x0006) == "yes" | tolower(x0006) == "no")) {
         print("ERROR!!! Problem with PARAM0006!")
         checkpoint_parameter <- FALSE
       }
@@ -121,9 +111,7 @@ UFA_xlsxAnalyzer <- function(spreadsheet) {
       print("ERROR!!! Problem with PARAM0007!")
       checkpoint_parameter <- FALSE
     } else {
-      if (tolower(x0007) == "yes" | tolower(x0007) == "no") {
-        cat("\n")
-      } else {
+      if (!(tolower(x0007) == "yes" | tolower(x0007) == "no")) {
         print("ERROR!!! Problem with PARAM0007!")
         checkpoint_parameter <- FALSE
       }
@@ -134,9 +122,7 @@ UFA_xlsxAnalyzer <- function(spreadsheet) {
       print("ERROR!!! Problem with PARAM0008!")
       checkpoint_parameter <- FALSE
     } else {
-      if (tolower(x0008) == "yes" | tolower(x0008) == "no") {
-        cat("\n")
-      } else {
+      if (!(tolower(x0008) == "yes" | tolower(x0008) == "no")) {
         print("ERROR!!! Problem with PARAM0008!")
         checkpoint_parameter <- FALSE
       }
@@ -201,9 +187,7 @@ UFA_xlsxAnalyzer <- function(spreadsheet) {
             print("ERROR!!! Problem with PARAM0012!")
             checkpoint_parameter <- FALSE
           } else {
-            if (tolower(x0012) == "mzml" | tolower(x0012) == "mzxml" | tolower(x0012) == "cdf") {
-              cat("\n")
-            } else {
+            if (!(tolower(x0012) == "mzml" | tolower(x0012) == "mzxml" | tolower(x0012) == "cdf")) {
               print("ERROR!!! Problem with PARAM0012! HRMS data are incompatible!")
               checkpoint_parameter <- FALSE
             }
@@ -279,7 +263,6 @@ UFA_xlsxAnalyzer <- function(spreadsheet) {
         PARAM0015 <- gsub(" ", "", tolower(PARAM0015))
         if (PARAM0015 == "samplemode" | PARAM0015 == "peakmode") {
           PARAM[x0015, 2] <- PARAM0015
-          cat("\n")
         } else {
           print("ERROR!!! Problem with PARAM0015!")
           checkpoint_parameter <- FALSE
@@ -335,16 +318,14 @@ UFA_xlsxAnalyzer <- function(spreadsheet) {
         print("ERROR!!! Problem with PARAM0020!")
         checkpoint_parameter <- FALSE
       } else {
-        if (x0020 > 0) {
-          cat("\n")
-        } else {
+        if (x0020 <= 0) {
           print("ERROR!!! Problem with PARAM0020!")
           checkpoint_parameter <- FALSE
         }
       }
       ##
-      x0021 <- tryCatch(eval(parse(text = PARAM[which(PARAM[, 1] == 'PARAM0021'), 2])), error = function(e){NA})
-      if (is.na(x0021[1])) {
+      x0021 <- tryCatch(eval(parse(text = PARAM[which(PARAM[, 1] == 'PARAM0021'), 2])), error = function(e){NULL})
+      if (is.null(x0021)) {
         print("ERROR!!! Problem with PARAM0021! This parameter should be a vector of five positive numbers!")
         checkpoint_parameter <- FALSE
       } else {
@@ -359,17 +340,15 @@ UFA_xlsxAnalyzer <- function(spreadsheet) {
         print("ERROR!!! Problem with PARAM0022!")
         checkpoint_parameter <- FALSE
       } else {
-        if (tolower(x0022) == "yes" | tolower(x0022) == "no") {
-          cat("\n")
-        } else {
+        if (!(tolower(x0022) == "yes" | tolower(x0022) == "no")) {
           print("ERROR!!! Problem with PARAM0022!")
           checkpoint_parameter <- FALSE
         }
       }
       ##
       if (tolower(x0022) == "yes") {
-        x0023 <- tryCatch(eval(parse(text = paste0("c(", PARAM[which(PARAM[, 1] == 'PARAM0023'), 2], ")"))), error = function(e){NA})
-        if (length(x0023) == 0 | is.na(x0023[1])) {
+        x0023 <- tryCatch(eval(parse(text = paste0("c(", PARAM[which(PARAM[, 1] == 'PARAM0023'), 2], ")"))), error = function(e){NULL})
+        if (is.null(x0023)) {
           print("ERROR!!! Problem with PARAM0023!")
           checkpoint_parameter <- FALSE
         }
@@ -421,9 +400,7 @@ UFA_xlsxAnalyzer <- function(spreadsheet) {
         print("ERROR!!! Problem with PARAM0027!")
         checkpoint_parameter <- FALSE
       } else {
-        if (x0027 > 0) {
-          cat("\n")
-        } else {
+        if (x0027 <= 0) {
           print("ERROR!!! Problem with PARAM0027!")
           checkpoint_parameter <- FALSE
         }
@@ -434,9 +411,7 @@ UFA_xlsxAnalyzer <- function(spreadsheet) {
         print("ERROR!!! Problem with PARAM0028!")
         checkpoint_parameter <- FALSE
       } else {
-        if (x0028 > 0) {
-          cat("\n")
-        } else {
+        if (x0028 <= 0) {
           print("ERROR!!! Problem with PARAM0028!")
           checkpoint_parameter <- FALSE
         }
@@ -447,9 +422,7 @@ UFA_xlsxAnalyzer <- function(spreadsheet) {
         print("ERROR!!! Problem with PARAM0029!")
         checkpoint_parameter <- FALSE
       } else {
-        if (tolower(x0029) == "yes" | tolower(x0029) == "no") {
-          cat("\n")
-        } else {
+        if (!(tolower(x0029) == "yes" | tolower(x0029) == "no")) {
           print("ERROR!!! Problem with PARAM0029!")
           checkpoint_parameter <- FALSE
         }
@@ -505,14 +478,14 @@ UFA_xlsxAnalyzer <- function(spreadsheet) {
           checkpoint_parameter <- FALSE
         }
         ##
-        fs0004 <- tryCatch(eval(parse(text = paste0("c(", PARAM_SF[which(PARAM_SF[, 1] == 'FS0004'), 2], ")"))), error = function(e){NA})
-        if (length(fs0004) != 2 | is.na(fs0004[1])) {
+        fs0004 <- tryCatch(eval(parse(text = paste0("c(", PARAM_SF[which(PARAM_SF[, 1] == 'FS0004'), 2], ")"))), error = function(e){NULL})
+        if (length(fs0004) != 2) {
           print("ERROR!!! Problem with FS0004! This parameter should be a vector of two positive numbers!")
           checkpoint_parameter <- FALSE
         }
         ##
-        fs0005 <- tryCatch(eval(parse(text = paste0("c(", PARAM_SF[which(PARAM_SF[, 1] == 'FS0005'), 2], ")"))), error = function(e){NA})
-        if ((length(fs0005) == 0) | is.na(fs0005[1])) {
+        fs0005 <- tryCatch(eval(parse(text = paste0("c(", PARAM_SF[which(PARAM_SF[, 1] == 'FS0005'), 2], ")"))), error = function(e){NULL})
+        if (is.null(fs0005)) {
           print("ERROR!!! Problem with FS0005!")
           checkpoint_parameter <- FALSE
         }

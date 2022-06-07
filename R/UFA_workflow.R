@@ -7,7 +7,7 @@ UFA_workflow <- function(spreadsheet) {
   PARAM <- UFA_xlsxAnalyzer(spreadsheet)
   if (length(PARAM) > 1) {
     print("The spreadsheet is consistent with the IDSL.UFA workflow!")
-    ##
+    ############################################################################
     x0001 <- PARAM[which(PARAM[, 1] == 'PARAM0001'), 2]
     if (tolower(x0001) == "yes") {
       x0002 <- PARAM[which(PARAM[, 1] == 'PARAM0002'), 2]
@@ -25,7 +25,7 @@ UFA_workflow <- function(spreadsheet) {
     ##
     x0005 <- PARAM[which(PARAM[, 1] == 'PARAM0005'), 2]
     if (tolower(x0005) == "yes") {
-      ##
+      ##########################################################################
       address_IPDB <- PARAM[which(PARAM[, 1] == "PARAM0004"), 2]
       print("Loading the isotopic profiles database!")
       IPDB <- loadRdata(address_IPDB)
@@ -44,11 +44,11 @@ UFA_workflow <- function(spreadsheet) {
       input_path_pl <- PARAM[which(PARAM[, 1] == 'PARAM0013'), 2]
       file_names_peaklist1 <- dir(path = input_path_pl, pattern = ".Rdata")
       file_names_peaklist2 <- dir(path = input_path_pl, pattern = "peaklist_")
-      file_names_peaklist <- file_names_peaklist1[file_names_peaklist1%in%file_names_peaklist2]
+      file_names_peaklist <- file_names_peaklist1[file_names_peaklist1 %in% file_names_peaklist2]
       #
       file_names_peaklist_hrms1 <- gsub(".Rdata", "", file_names_peaklist)
       file_names_peaklist_hrms2 <- gsub("peaklist_", "", file_names_peaklist_hrms1)
-      file_names_peaklist_hrms <- file_name_hrms%in%file_names_peaklist_hrms2
+      file_names_peaklist_hrms <- file_name_hrms %in% file_names_peaklist_hrms2
       L_PL <- length(which(file_names_peaklist_hrms == TRUE))
       if (length(file_name_hrms) != L_PL) {
         stop("Error!!! peaklist files are not available for the entire selected HRMS files!")
@@ -67,13 +67,13 @@ UFA_workflow <- function(spreadsheet) {
       minPCS <- as.numeric(PARAM[which(PARAM[, 1] == "PARAM0018"), 2])
       minNDCS <- as.numeric(PARAM[which(PARAM[, 1] == "PARAM0019"), 2])
       minRCS <- as.numeric(PARAM[which(PARAM[, 1] == "PARAM0020"), 2])
-      Score_coeff <- tryCatch(eval(parse(text = PARAM[which(PARAM[, 1] == 'PARAM0021'), 2])), error = function(e){NA})
+      Score_coeff <- tryCatch(eval(parse(text = PARAM[which(PARAM[, 1] == 'PARAM0021'), 2])), error = function(e){rep(1, 5)})
       ##
       MF_library_search_TRUE <- FALSE
       x0022 <- PARAM[which(PARAM[, 1] == 'PARAM0022'), 2]
       if (tolower(x0022) == "yes") {
         MF_library_search_TRUE <- TRUE
-        IonPathways <- tryCatch(eval(parse(text = PARAM[which(PARAM[, 1] == 'PARAM0023'), 2])), error = function(e){NA})
+        IonPathways <- tryCatch(eval(parse(text = PARAM[which(PARAM[, 1] == 'PARAM0023'), 2])), error = function(e){c("[M]")})
         ##
         x0024 <- PARAM[which(PARAM[, 1] == 'PARAM0024'), 2]
         MF_library <- loadRdata(x0024)
@@ -94,6 +94,7 @@ UFA_workflow <- function(spreadsheet) {
         ##
         save(MolecularFormulaAnnotationTable, file = paste0(output_path_annotated_mf_tables, "/MolecularFormulaAnnotationTable_", file_name_hrms[i], ".Rdata"))
         write.csv(MolecularFormulaAnnotationTable, file = paste0(output_path_annotated_mf_tables, "/MolecularFormulaAnnotationTable_", file_name_hrms[i], ".csv"))
+        ##
         return()
       }
       if (para_mode == "peakmode" | NPT == 1) {
@@ -104,24 +105,31 @@ UFA_workflow <- function(spreadsheet) {
           call_molecular_formula_annotation(i)
         }
         close(progressBARboundaries)
-      }
-      if (para_mode == "samplemode") {
+      } else if (para_mode == "samplemode") {
         NPT0 <- NPT
         NPT <- 1
+        ##
         osType <- Sys.info()[['sysname']]
-        if (osType == "Windows") {
-          clust <- makeCluster(NPT0)
-          registerDoParallel(clust)
-          null_variable <- foreach(k = 1:L_PL, .verbose = FALSE) %dopar% {
-            call_molecular_formula_annotation(k)
-          }
-          stopCluster(clust)
+        ##
+        if (osType == "Linux") {
           ##
-        } else if (osType == "Linux") {
           null_variable <- mclapply(1:L_PL, function (k) {
             call_molecular_formula_annotation(k)
           }, mc.cores = NPT0)
+          ##
           closeAllConnections()
+          ##
+        } else if (osType == "Windows") {
+          ##
+          clust <- makeCluster(NPT0)
+          registerDoParallel(clust)
+          ##
+          null_variable <- foreach(k = 1:L_PL, .verbose = FALSE) %dopar% {
+            call_molecular_formula_annotation(k)
+          }
+          ##
+          stopCluster(clust)
+          ##
         }
       }
       print("Sucessfully completed molecular formula annotation on individual peaklists!")
@@ -129,17 +137,17 @@ UFA_workflow <- function(spreadsheet) {
       gc()
       closeAllConnections()
     }
-    ##
+    ############################################################################
     x0006 <- PARAM[which(PARAM[, 1] == 'PARAM0006'), 2]
     if (tolower(x0006) == "yes") {
       aligned_molecular_formula_annotator(PARAM)
     }
-    ##
+    ############################################################################
     x0007 <- PARAM[which(PARAM[, 1] == 'PARAM0007'), 2]
     if (tolower(x0007) == "yes") {
       UFA_score_coefficient_workflow(spreadsheet)
     }
-    ##
+    ############################################################################
     x0008 <- PARAM[which(PARAM[, 1] == 'PARAM0008'), 2]
     if (tolower(x0008) == "yes") {
       PARAM_SA <- UFA_profile_visualizer_xlsxAnalyzer(spreadsheet)
@@ -152,6 +160,7 @@ UFA_workflow <- function(spreadsheet) {
         write.csv(AnnotatedSpectraTable, file = paste0(output_path, "/AnnotatedSpectraTable.csv"))
       }
     }
+    ############################################################################
     required_time <- Sys.time() - initiation_time
     print(required_time)
   }

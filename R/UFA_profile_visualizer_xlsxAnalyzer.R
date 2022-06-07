@@ -22,7 +22,8 @@ UFA_profile_visualizer_xlsxAnalyzer <- function (spreadsheet) {
   } else {
     print("The UFA spreadsheet was not produced properly!")
   }
-  if (checkpoint_parameter == TRUE) {
+  ##############################################################################
+  if (checkpoint_parameter) {
     x0010 <- which(PARAM_SA[, 1] == "PARAM0010")
     if (length(x0010) == 0) {
       print("ERROR!!! Problem with PARAM0010!")
@@ -63,9 +64,7 @@ UFA_profile_visualizer_xlsxAnalyzer <- function (spreadsheet) {
           print("ERROR!!! Problem with PARAM0012!")
           checkpoint_parameter <- FALSE
         } else {
-          if (tolower(x0012) == "mzml" | tolower(x0012) == "mzxml" | tolower(x0012) == "cdf") {
-            cat("\n")
-          } else {
+          if (!(tolower(x0012) == "mzml" | tolower(x0012) == "mzxml" | tolower(x0012) == "cdf")) {
             print("ERROR!!! Problem with PARAM0012! HRMS data are incompatible!")
             checkpoint_parameter <- FALSE
           }
@@ -107,13 +106,28 @@ UFA_profile_visualizer_xlsxAnalyzer <- function (spreadsheet) {
         }
       }
     }
-    xsa0001 <- tryCatch(eval(parse(text = paste0("c(", PARAM_SA[which(PARAM_SA[, 1] == "SA0001"), 2], ")"))), error = function(e){NA})
-    if ((length(xsa0001) == 0) | is.na(xsa0001[1])) {
+    ##
+    x0014 <- which(PARAM_SA[, 1] == "PARAM0014")
+    if (length(x0014) == 0) {
+      print("ERROR!!! Problem with PARAM0014!")
+      checkpoint_parameter <- FALSE
+    } else {
+      output_path <- PARAM_SA[x0014, 2]
+      output_path <- gsub("\\", "/", output_path, fixed = TRUE)
+      PARAM_SA[x0014, 2] <- output_path
+      if (!dir.exists(output_path)) {
+        print("ERROR!!! Problem with PARAM0014! Please make sure the full path is provided!")
+        checkpoint_parameter <- FALSE
+      }
+    }
+    ############################################################################
+    xsa0001 <- tryCatch(eval(parse(text = paste0("c(", PARAM_SA[which(PARAM_SA[, 1] == "SA0001"), 2], ")"))), error = function(e){NULL})
+    if (is.null(xsa0001)) {
       print("ERROR!!! Problem with SA0001!")
       checkpoint_parameter <- FALSE
     }
-    xsa0002 <- tryCatch(eval(parse(text = paste0("c(", PARAM_SA[which(PARAM_SA[, 1] == "SA0002"), 2], ")"))), error = function(e){NA})
-    if ((length(xsa0002) == 0) | is.na(xsa0002[1])) {
+    xsa0002 <- tryCatch(eval(parse(text = paste0("c(", PARAM_SA[which(PARAM_SA[, 1] == "SA0002"), 2], ")"))), error = function(e){NULL})
+    if (is.null(xsa0002)) {
       print("ERROR!!! Problem with SA0002!")
       checkpoint_parameter <- FALSE
     }
@@ -131,8 +145,8 @@ UFA_profile_visualizer_xlsxAnalyzer <- function (spreadsheet) {
         checkpoint_parameter <- FALSE
       }
     }
-    xsa0004 <- tryCatch(eval(parse(text = paste0("c(", PARAM_SA[which(PARAM_SA[, 1] == "SA0004"), 2], ")"))), error = function(e){NA})
-    if ((length(xsa0002) == 0) | is.na(xsa0004[1])) {
+    xsa0004 <- tryCatch(eval(parse(text = paste0("c(", PARAM_SA[which(PARAM_SA[, 1] == "SA0004"), 2], ")"))), error = function(e){NULL})
+    if (is.null(xsa0004)) {
       print("ERROR!!! Problem with SA0004!")
       checkpoint_parameter <- FALSE
     }
@@ -151,8 +165,8 @@ UFA_profile_visualizer_xlsxAnalyzer <- function (spreadsheet) {
       print("ERROR!!! Problem with SA0006!")
       checkpoint_parameter <- FALSE
     }
-    SA0007 <- tryCatch(eval(parse(text = paste0("c(", PARAM_SA[which(PARAM_SA[, 1] == "SA0007"), 2], ")"))), error = function(e){NA})
-    if ((length(SA0007) != 2) | is.na(SA0007[1])) {
+    SA0007 <- tryCatch(eval(parse(text = paste0("c(", PARAM_SA[which(PARAM_SA[, 1] == "SA0007"), 2], ")"))), error = function(e){NULL})
+    if (length(SA0007) != 2) {
       print("ERROR!!! Problem with SA0008! This parameter should be a vector of two positive numbers!")
       checkpoint_parameter <- FALSE
     }
@@ -172,7 +186,7 @@ UFA_profile_visualizer_xlsxAnalyzer <- function (spreadsheet) {
       checkpoint_parameter <- FALSE
     } else {
       if (SA0009 >= 1) {
-        if ((SA0009%%1) != 0) {
+        if ((SA0009 %% 1) != 0) {
           print("ERROR!!! Problem with SA0009! This parameter should be a positive integer!")
           checkpoint_parameter <- FALSE
         }

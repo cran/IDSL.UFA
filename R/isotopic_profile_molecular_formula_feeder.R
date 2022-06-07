@@ -75,18 +75,15 @@ isotopic_profile_molecular_formula_feeder <- function(molecular_formula, peak_sp
   }
   ##
   L_MolF <- length(molecular_formula)
+  print("Initiated deconvoluting molecular formulas!")
   ##
-  osType <- Sys.info()[['sysname']]
-  if (osType == "Windows") {
-    clust <- makeCluster(number_processing_threads)
-    registerDoParallel(clust)
+  if (number_processing_threads == 1) {
     ##
-    print("Initiated deconvoluting molecular formulas!")
-    MoleFormVecMat <- foreach(counter = 1:L_MolF, .combine = 'rbind', .verbose = FALSE) %dopar% {
+    MoleFormVecMat <- do.call(rbind, lapply(1:L_MolF, function(counter) {
       molf_deconvoluter(counter)
-    }
+    }))
     if (is.null(MoleFormVecMat)) {
-      print("Molecular formulas are not consistent with the ionization pathways!")
+      stop("Molecular formulas are not consistent with the ionization pathways!")
     }
     MoleFormVecMat <- unique(as.matrix(MoleFormVecMat)) # To remove redundant rows
     print("Completed deconvoluting molecular formulas!")
@@ -94,47 +91,74 @@ isotopic_profile_molecular_formula_feeder <- function(molecular_formula, peak_sp
     L_MoleFormVecMat <- dim(MoleFormVecMat)[1]
     print(paste0("There are ", L_MoleFormVecMat, " molecular formula ions for isotopic profile calculations!"))
     print("Initiated calculating isotopic profiles!")
-    IsotopicProfileList <- foreach(counter = 1:L_MoleFormVecMat, .verbose = FALSE) %dopar% {
+    IsotopicProfileList <- lapply(1:L_MoleFormVecMat, function(counter) {
       IP_calculator(counter)
-    }
+    })
     print("Completed calculating isotopic profiles!")
     ##
     print("Initiated calculating the database parameters!")
-    ip_db_mat <- foreach(counter = 1:L_MoleFormVecMat, .combine = 'rbind', .verbose = FALSE) %dopar% {
+    ip_db_mat <- do.call(rbind, lapply(1:L_MoleFormVecMat, function(counter) {
       ip_db_function(counter)
+    }))
+    ##
+  } else {
+    osType <- Sys.info()[['sysname']]
+    if (osType == "Windows") {
+      clust <- makeCluster(number_processing_threads)
+      registerDoParallel(clust)
+      ##
+      MoleFormVecMat <- foreach(counter = 1:L_MolF, .combine = 'rbind', .verbose = FALSE) %dopar% {
+        molf_deconvoluter(counter)
+      }
+      if (is.null(MoleFormVecMat)) {
+        stop("Molecular formulas are not consistent with the ionization pathways!")
+      }
+      MoleFormVecMat <- unique(as.matrix(MoleFormVecMat)) # To remove redundant rows
+      print("Completed deconvoluting molecular formulas!")
+      ##
+      L_MoleFormVecMat <- dim(MoleFormVecMat)[1]
+      print(paste0("There are ", L_MoleFormVecMat, " molecular formula ions for isotopic profile calculations!"))
+      print("Initiated calculating isotopic profiles!")
+      IsotopicProfileList <- foreach(counter = 1:L_MoleFormVecMat, .verbose = FALSE) %dopar% {
+        IP_calculator(counter)
+      }
+      print("Completed calculating isotopic profiles!")
+      ##
+      print("Initiated calculating the database parameters!")
+      ip_db_mat <- foreach(counter = 1:L_MoleFormVecMat, .combine = 'rbind', .verbose = FALSE) %dopar% {
+        ip_db_function(counter)
+      }
+      ##
+      stopCluster(clust)
+      ##
+    } else if (osType == "Linux") {
+      ##
+      MoleFormVecMat <- do.call(rbind, mclapply(1:L_MolF, function(counter) {
+        molf_deconvoluter(counter)
+      }, mc.cores = number_processing_threads))
+      if (is.null(MoleFormVecMat)) {
+        stop("Molecular formulas are not consistent with the ionization pathways!")
+      }
+      MoleFormVecMat <- unique(as.matrix(MoleFormVecMat)) # To remove redundant rows
+      print("Completed deconvoluting molecular formulas!")
+      ##
+      L_MoleFormVecMat <- dim(MoleFormVecMat)[1]
+      print(paste0("There are ", L_MoleFormVecMat, " molecular formula ions for isotopic profile calculations!"))
+      print("Initiated calculating isotopic profiles!")
+      IsotopicProfileList <- mclapply(1:L_MoleFormVecMat, function(counter) {
+        IP_calculator(counter)
+      }, mc.cores = number_processing_threads)
+      print("Completed calculating isotopic profiles!")
+      ##
+      print("Initiated calculating the database parameters!")
+      ip_db_mat <- do.call(rbind, mclapply(1:L_MoleFormVecMat, function(counter) {
+        ip_db_function(counter)
+      }, mc.cores = number_processing_threads))
+      ##
+      closeAllConnections()
     }
-    print("Completed calculating the database parameters!")
-    ##
-    stopCluster(clust)
-    ##
-  } else if (osType == "Linux") {
-    ##
-    print("Initiated deconvoluting molecular formulas!")
-    MoleFormVecMat <- do.call(rbind, mclapply(1:L_MolF, function (counter) {
-      molf_deconvoluter(counter)
-    }, mc.cores = number_processing_threads))
-    if (is.null(MoleFormVecMat)) {
-      print("Molecular formulas are not consistent with the ionization pathways!")
-    }
-    MoleFormVecMat <- unique(as.matrix(MoleFormVecMat)) # To remove redundant rows
-    print("Completed deconvoluting molecular formulas!")
-    ##
-    L_MoleFormVecMat <- dim(MoleFormVecMat)[1]
-    print(paste0("There are ", L_MoleFormVecMat, " molecular formula ions for isotopic profile calculations!"))
-    print("Initiated calculating isotopic profiles!")
-    IsotopicProfileList <- mclapply(1:L_MoleFormVecMat, function (counter) {
-      IP_calculator(counter)
-    }, mc.cores = number_processing_threads)
-    print("Completed calculating isotopic profiles!")
-    ##
-    print("Initiated calculating the database parameters!")
-    ip_db_mat <- do.call(rbind, mclapply(1:L_MoleFormVecMat, function (counter) {
-      ip_db_function(counter)
-    }, mc.cores = number_processing_threads))
-    print("Completed calculating the database parameters!")
-    ##
-    closeAllConnections()
   }
+  print("Completed calculating the database parameters!")
   ##############################################################################
   x_element_non0 <- do.call(c, lapply(1:L_Elements, function(counter) {
     x_non0 <- which(MoleFormVecMat[, counter] > 0)

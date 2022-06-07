@@ -37,10 +37,11 @@ aligned_molecular_formula_annotator <- function(PARAM) {
     peak_table_id <- peak_Xcol[, (i + 2)]
     MolecularFormulaAnnotationTable <- loadRdata(paste0(output_path_annotated_mf_tables, "/", mf_table_list[i]))
     matched_peak_ids <- as.numeric(MolecularFormulaAnnotationTable[, 1])
-    matched_mf_ids <- as.numeric(MolecularFormulaAnnotationTable[, 2])
     x_peak_ids <- which(peak_table_id %in% unique(matched_peak_ids) == TRUE)
     ##
     if (length(x_peak_ids) > 0) {
+      matched_mf_ids <- as.numeric(MolecularFormulaAnnotationTable[, 2])
+      ##
       do.call(rbind, lapply(x_peak_ids, function(j) {
         x_j <- which(matched_peak_ids == peak_table_id[j])
         max_k <- min(c(maxRankSample, length(x_j)))
@@ -426,7 +427,7 @@ aligned_molecular_formula_annotator <- function(PARAM) {
   title_mat <- cbind("m/z", "RT", "IPA detection frequency", paste0(peak_property_name, " frequency"), paste0("median ", peak_property_name), title_mat)
   colnames(aligned_molecular_formula) <- title_mat
   rownames(aligned_molecular_formula) <- c()
-  print("Completed processing the peak property table!")
+  print("Completed processing of the peak property table!")
   output_path_aligned_table <- paste0(output_path, "/aligned_molecular_formula_table")
   if (!dir.exists(output_path_aligned_table)) {
     dir.create(output_path_aligned_table)

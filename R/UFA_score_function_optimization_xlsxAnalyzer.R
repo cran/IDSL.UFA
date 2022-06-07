@@ -30,9 +30,7 @@ UFA_score_function_optimization_xlsxAnalyzer <- function(spreadsheet) {
       checkpoint_parameter <- 0
       x0001 <- 0
     } else {
-      if (tolower(x0001) == "yes" | tolower(x0001) == "no") {
-        cat("\n")
-      } else {
+      if (!(tolower(x0001) == "yes" | tolower(x0001) == "no")) {
         print("ERROR!!! Problem with SFT0001!")
         checkpoint_parameter <- 0
       }
@@ -57,9 +55,7 @@ UFA_score_function_optimization_xlsxAnalyzer <- function(spreadsheet) {
       checkpoint_parameter <- 0
       x0003 <- 0
     } else {
-      if (tolower(x0003) == "yes" | tolower(x0003) == "no") {
-        cat("\n")
-      } else {
+      if (!(tolower(x0003) == "yes" | tolower(x0003) == "no")) {
         print("ERROR!!! Problem with SFT0003!")
         checkpoint_parameter <- 0
       }
@@ -71,9 +67,7 @@ UFA_score_function_optimization_xlsxAnalyzer <- function(spreadsheet) {
       checkpoint_parameter <- 0
       x0004 <- 0
     } else {
-      if (tolower(x0004) == "yes" | tolower(x0004) == "no") {
-        cat("\n")
-      } else {
+      if (!(tolower(x0004) == "yes" | tolower(x0004) == "no")) {
         print("ERROR!!! Problem with SFT0004!")
         checkpoint_parameter <- 0
       }
@@ -95,9 +89,7 @@ UFA_score_function_optimization_xlsxAnalyzer <- function(spreadsheet) {
       }
     }
     ################################## Data ####################################
-    if (tolower(x0001) == "no"  & tolower(x0003) == "no") {
-      cat("\n")
-    } else {
+    if (!(tolower(x0001) == "no"  & tolower(x0003) == "no")) {
       x0006 <- which(PARAM_SFT[, 1] == 'SFT0006')
       if (length(x0006) == 0) {
         print("ERROR!!! Problem with SFT0006!")
@@ -140,9 +132,7 @@ UFA_score_function_optimization_xlsxAnalyzer <- function(spreadsheet) {
             print("ERROR!!! Problem with SFT0008!")
             checkpoint_parameter <- 0
           } else {
-            if (tolower(x0008) == "mzml" | tolower(x0008) == "mzxml" | tolower(x0008) == "cdf") {
-              cat("\n")
-            } else {
+            if (!(tolower(x0008) == "mzml" | tolower(x0008) == "mzxml" | tolower(x0008) == "cdf")) {
               print("ERROR!!! Problem with SFT0008! HRMS data are incompatible!")
               checkpoint_parameter <- 0
             }
@@ -223,9 +213,7 @@ UFA_score_function_optimization_xlsxAnalyzer <- function(spreadsheet) {
           x_mf <- which(col == 'MolcularFormula')
           x_ipw <- which(col == 'IonizationPathway')
           x_RT <- which(col == 'RetentionTime(min)')
-          if (length(x_fn) > 0 & length(x_mf) > 0 & length(x_ipw) > 0 & length(x_RT) > 0) {
-            cat("\n")
-          } else {
+          if (!(length(x_fn) > 0 & length(x_mf) > 0 & length(x_ipw) > 0 & length(x_RT) > 0)) {
             print("ERROR!!! Problem with SFT0011! Incorrect column headers in the reference spreadsheet -> The following columns should be detected in the spreadsheet : 'FileName', 'MolcularFormula', 'IonizationPathway', `RetentionTime(min)`, `m/z' - case sensitive")
             checkpoint_parameter <- 0
           }
@@ -295,9 +283,7 @@ UFA_score_function_optimization_xlsxAnalyzer <- function(spreadsheet) {
         print("ERROR!!! Problem with SFT0017!")
         checkpoint_parameter <- 0
       } else {
-        if (x0017 > 0) {
-          cat("\n")
-        } else {
+        if (x0017 <= 0) {
           print("ERROR!!! Problem with SFT0017!")
           checkpoint_parameter <- 0
         }
@@ -315,7 +301,6 @@ UFA_score_function_optimization_xlsxAnalyzer <- function(spreadsheet) {
         SFT0018 <- gsub(" ", "", tolower(SFT0018))
         if (SFT0018 == "toprank" | SFT0018 == "overalrank") {
           PARAM_SFT[x0018, 2] <- SFT0018
-          cat("\n")
         } else {
           print("ERROR!!! Problem with SFT0018!")
           checkpoint_parameter <- 0
@@ -346,8 +331,8 @@ UFA_score_function_optimization_xlsxAnalyzer <- function(spreadsheet) {
     if (tolower(x0003) == "yes") {
       checkpoint_parameter <- SFT_function_obj_func_test(PARAM_SFT, checkpoint_parameter)
       ##
-      SFT0020 <- tryCatch(eval(parse(text = PARAM_SFT[which(PARAM_SFT[, 1] == 'SFT0020'), 2])), error = function(e){NA})
-      if (is.na(SFT0020[1])) {
+      SFT0020 <- tryCatch(eval(parse(text = PARAM_SFT[which(PARAM_SFT[, 1] == 'SFT0020'), 2])), error = function(e){NULL})
+      if (is.null(SFT0020)) {
         print("ERROR!!! Problem with SFT0020! This parameter should be a vector of five positive numbers!")
         checkpoint_parameter <- 0
       } else {
@@ -357,8 +342,8 @@ UFA_score_function_optimization_xlsxAnalyzer <- function(spreadsheet) {
         }
       }
       ##
-      SFT0021 <- tryCatch(eval(parse(text = PARAM_SFT[which(PARAM_SFT[, 1] == 'SFT0021'), 2])), error = function(e){NA})
-      if (is.na(SFT0021[1])) {
+      SFT0021 <- tryCatch(eval(parse(text = PARAM_SFT[which(PARAM_SFT[, 1] == 'SFT0021'), 2])), error = function(e){NULL})
+      if (is.null(SFT0021)) {
         print("ERROR!!! Problem with SFT0021! This parameter should be a vector of five positive numbers!")
         checkpoint_parameter <- 0
       } else {
@@ -380,9 +365,7 @@ UFA_score_function_optimization_xlsxAnalyzer <- function(spreadsheet) {
         print("ERROR!!! Problem with SFT0022!")
         checkpoint_parameter <- 0
       } else {
-        if (x0022 > 0) {
-          cat("\n")
-        } else {
+        if (x0022 <= 0) {
           print("ERROR!!! Problem with SFT0022!")
           checkpoint_parameter <- 0
         }
@@ -393,9 +376,7 @@ UFA_score_function_optimization_xlsxAnalyzer <- function(spreadsheet) {
         print("ERROR!!! Problem with SFT0023!")
         checkpoint_parameter <- 0
       } else {
-        if (x0023 > 0) {
-          cat("\n")
-        } else {
+        if (x0023 <= 0) {
           print("ERROR!!! Problem with SFT0023!")
           checkpoint_parameter <- 0
         }

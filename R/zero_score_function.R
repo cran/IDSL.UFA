@@ -49,7 +49,7 @@ zero_score_function <- function(PARAM_SFT) {
   RTf <- as.numeric(excelfile$`RetentionTime(min)`)
   ##
   Molf <- gsub(" ", "", Molf, fixed = TRUE)
-  Molf <- gsub("+", "", Molf, fixed = TRUE)
+  Molf <- gsub("[+]", "", Molf, fixed = TRUE)
   Molf <- gsub("-", "", Molf, fixed = TRUE)
   ##############################################################################
   EL <- element_sorter()
@@ -170,9 +170,9 @@ zero_score_function <- function(PARAM_SFT) {
   MolVecMatList <- 0
   ##
   Molf_IPDB <- hill_molecular_formula_printer(IPDB[[2]][[1]], IPDB[[2]][[2]], NPT)
-  x_IPDB <- which((Molf_IPDB%in%Molf_product) == TRUE)
+  x_IPDB <- which((Molf_IPDB %in% Molf_product) == TRUE)
   mzf <- rep(NA, L_Molf)
-  for (k in x_IPDB) {
+  for(k in x_IPDB) {
     x_product <- which(Molf_product == Molf_IPDB[k])
     if (length(x_product) > 0) {
       mzf[x_product] <- IPDB[[1]][k]

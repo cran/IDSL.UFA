@@ -4,8 +4,10 @@ molecular_formulas_source_IPDB <- function(PARAM_SF) {
   x_csv_file <- which(PARAM_SF[, 1] == "FS0001")
   Molecular_formula_source_file <- gsub("\\", "/", PARAM_SF[x_csv_file, 2], fixed = TRUE)
   ##
-  molecular_formula <- as.matrix(as.vector(read.csv(Molecular_formula_source_file, header = FALSE)))
-  molecular_formula <- gsub(" ", "", molecular_formula, fixed = TRUE)
+  molecular_formula <- data.frame(V1 = as.vector(read.csv(Molecular_formula_source_file, header = FALSE)))
+  molecular_formula <-  gsub(" ", "", molecular_formula[, 1])
+  molecular_formula <-  gsub("[+]", "", molecular_formula)
+  molecular_formula <-  gsub("-", "", molecular_formula)
   ##
   peak_spacing <- as.numeric(PARAM_SF[which(PARAM_SF[, 1] == "FS0002"), 2])
   intensity_cutoff_str <- PARAM_SF[which(PARAM_SF[, 1] == "FS0003"), 2]
