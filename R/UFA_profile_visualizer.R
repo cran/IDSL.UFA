@@ -133,13 +133,9 @@ UFA_profile_visualizer <- function(PARAM_SA) {
       mzList.m <- do.call(rbind, lapply(1:L_MoleFormVecMat, function(j) {
         Annotation <- c()
         ##
-        x_pl <- which(abs(peaklist[, 8] - mz_DataBase[j]) <= mass_accuracy &
-                        abs(peaklist[, 3] - RT_target_ion[j]) <= delta_rt)
-        if (length(x_pl) > 0) {
-          if (length(x_pl) > 1) {
-            x_min <- which.min(abs(peaklist[x_pl, 8] - mz_DataBase[j]))
-            x_pl <- x_pl[x_min[1]]
-          }
+        x_pl <-mzRTindexer(peaklist[, 8], peaklist[, 3], mz_DataBase[j], RT_target_ion[j], mass_accuracy, delta_rt)
+        if (!is.null(x_pl)) {
+          ##
           R13C_PL <- peaklist[x_pl, 11]
           RangeScan <- peaklist[x_pl, 1]:peaklist[x_pl, 2]
           NumberScans <- length(RangeScan)

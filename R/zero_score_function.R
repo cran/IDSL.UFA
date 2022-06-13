@@ -23,12 +23,12 @@ zero_score_function <- function(PARAM_SFT) {
   input_path_pl <- PARAM_SFT[which(PARAM_SFT[, 1] == 'SFT0009'), 2]
   file_names_peaklist1 <- dir(path = input_path_pl, pattern = ".Rdata")
   file_names_peaklist2 <- dir(path = input_path_pl, pattern = "peaklist_")
-  file_names_peaklist <- file_names_peaklist1[file_names_peaklist1%in%file_names_peaklist2]
+  file_names_peaklist <- file_names_peaklist1[file_names_peaklist1 %in% file_names_peaklist2]
   L_PL <- length(file_names_peaklist)
   #
   file_names_peaklist_hrms1 <- gsub(".Rdata", "", file_names_peaklist)
   file_names_peaklist_hrms2 <- gsub("peaklist_", "", file_names_peaklist_hrms1)
-  file_names_peaklist_hrms <- file_name_hrms%in%file_names_peaklist_hrms2
+  file_names_peaklist_hrms <- file_name_hrms %in% file_names_peaklist_hrms2
   if (length(which(file_names_peaklist_hrms == TRUE)) != L_PL) {
     stop("Error!!! peaklist files are not available for the entire selected HRMS files!")
   }
@@ -60,7 +60,7 @@ zero_score_function <- function(PARAM_SFT) {
   ##
   u_Ionf <- unique(Ionf)
   index_ion_dc <- rep(0, L_Molf)
-  for (i in 1: length(u_Ionf)) {
+  for (i in 1:length(u_Ionf)) {
     x_grep <- which(Ionf == u_Ionf[i])
     index_ion_dc[x_grep] <- i
   }
@@ -172,7 +172,7 @@ zero_score_function <- function(PARAM_SFT) {
   Molf_IPDB <- hill_molecular_formula_printer(IPDB[[2]][[1]], IPDB[[2]][[2]], NPT)
   x_IPDB <- which((Molf_IPDB %in% Molf_product) == TRUE)
   mzf <- rep(NA, L_Molf)
-  for(k in x_IPDB) {
+  for (k in x_IPDB) {
     x_product <- which(Molf_product == Molf_IPDB[k])
     if (length(x_product) > 0) {
       mzf[x_product] <- IPDB[[1]][k]

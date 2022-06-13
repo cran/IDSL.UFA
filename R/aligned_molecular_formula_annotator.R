@@ -54,8 +54,8 @@ aligned_molecular_formula_annotator <- function(PARAM) {
   call_calculating_median_ranks <- function(j) {
     ID_freq_Rank <- rep(0, N_candidate3)
     ##
-    if (x_peaks[j] != x_peaks[j + 1]) {
-      ID_rank <- matrix(MF_Zcol[(x_peaks[j] + 1):x_peaks[j + 1], 2:3], ncol = 2)
+    if (xZcol[j, 1] != 0) {
+      ID_rank <- matrix(MF_Zcol[xZcol[j, 1]:xZcol[j, 2], 2:3], ncol = 2)
       ##
       t_IDs <- sort(table(ID_rank[, 1]), decreasing = TRUE)
       max_k <- min(c(N_candidate, length(t_IDs)))
@@ -139,29 +139,14 @@ aligned_molecular_formula_annotator <- function(PARAM) {
     }))
     close(progressBARboundaries)
     #
-    MF_Zcol <- MF_Zcol[order(MF_Zcol[, 1]), ]
-    x_peaks <- unique(c(0, which(diff(MF_Zcol[, 1]) > 0), dim(MF_Zcol)[1]))
+    MF_Zcol <- MF_Zcol[order(MF_Zcol[, 1], decreasing = FALSE), ]
+    xDiff <- which(diff(MF_Zcol[, 1]) > 0)
+    #
+    xZcol <- matrix(rep(0, 2*L_peaks), ncol = 2)
+    #
     u_peakid <- unique(MF_Zcol[, 1])
-    #
-    if (u_peakid[1] != 1) {
-      u_peakid <- c(1, u_peakid)
-      x_peaks <- c(x_peaks[1], x_peaks)
-    }
-    #
-    progressBARboundaries <- txtProgressBar(min = 0, max = L_peaks, initial = 1, style = 3)
-    for (k in 1:L_peaks) {
-      setTxtProgressBar(progressBARboundaries, k)
-      if (k > length(u_peakid)) {
-        u_peakid <- c(u_peakid, k)
-        x_peaks <- c(x_peaks, x_peaks[k])
-      } else {
-        if (u_peakid[k] != k) {
-          u_peakid <- append(u_peakid, k, after = (k - 1))
-          x_peaks <- append(x_peaks, x_peaks[k], after = (k - 1))
-        }
-      }
-    }
-    close(progressBARboundaries)
+    xZcol[u_peakid, 1] <- c(1, (xDiff + 1))
+    xZcol[u_peakid, 2] <- c(xDiff, dim(MF_Zcol)[1])
     #
     print("Completed matching peak IDs!")
     ##
@@ -173,7 +158,7 @@ aligned_molecular_formula_annotator <- function(PARAM) {
       ##
       call_calculating_median_ranks(k)
     }))
-    MF_Zcol <- 0
+    MF_Zcol <- NULL
     close(progressBARboundaries)
     print("Completed calculating median ranks!")
     ##
@@ -206,7 +191,7 @@ aligned_molecular_formula_annotator <- function(PARAM) {
     print("Loading the isotopic profiles database!")
     IPDB <- loadRdata(address_sav_IPDB)
     MolVecList0 <- IPDB[[2]]
-    IPDB <- 0
+    IPDB <- NULL
     Elements <- MolVecList0[[1]]
     MolVecList_DB <- MolVecList0[[2]]
     L_Elements <- length(Elements)
@@ -251,29 +236,14 @@ aligned_molecular_formula_annotator <- function(PARAM) {
         call_MF_Zcol(k)
       }, mc.cores = number_processing_threads))
       #
-      MF_Zcol <- MF_Zcol[order(MF_Zcol[, 1]), ]
-      x_peaks <- unique(c(0, which(diff(MF_Zcol[, 1]) > 0), dim(MF_Zcol)[1]))
+      MF_Zcol <- MF_Zcol[order(MF_Zcol[, 1], decreasing = FALSE), ]
+      xDiff <- which(diff(MF_Zcol[, 1]) > 0)
+      #
+      xZcol <- matrix(rep(0, 2*L_peaks), ncol = 2)
+      #
       u_peakid <- unique(MF_Zcol[, 1])
-      #
-      if (u_peakid[1] != 1) {
-        u_peakid <- c(1, u_peakid)
-        x_peaks <- c(x_peaks[1], x_peaks)
-      }
-      #
-      progressBARboundaries <- txtProgressBar(min = 0, max = L_peaks, initial = 1, style = 3)
-      for (k in 1:L_peaks) {
-        setTxtProgressBar(progressBARboundaries, k)
-        if (k > length(u_peakid)) {
-          u_peakid <- c(u_peakid, k)
-          x_peaks <- c(x_peaks, x_peaks[k])
-        } else {
-          if (u_peakid[k] != k) {
-            u_peakid <- append(u_peakid, k, after = (k - 1))
-            x_peaks <- append(x_peaks, x_peaks[k], after = (k - 1))
-          }
-        }
-      }
-      close(progressBARboundaries)
+      xZcol[u_peakid, 1] <- c(1, (xDiff + 1))
+      xZcol[u_peakid, 2] <- c(xDiff, dim(MF_Zcol)[1])
       #
       print("Completed matching peak IDs!")
       ##
@@ -281,7 +251,7 @@ aligned_molecular_formula_annotator <- function(PARAM) {
       M_IDs <- do.call(rbind, mclapply(1:L_peaks, function(k) {
         call_calculating_median_ranks(k)
       }, mc.cores = number_processing_threads))
-      MF_Zcol <- 0
+      MF_Zcol <- NULL
       print("Completed calculating median ranks!")
       ##
       if (tolower(adjust_freq_rank) == "yes") {
@@ -303,7 +273,7 @@ aligned_molecular_formula_annotator <- function(PARAM) {
       print("Loading the isotopic profiles database!")
       IPDB <- loadRdata(address_sav_IPDB)
       MolVecList0 <- IPDB[[2]]
-      IPDB <- 0
+      IPDB <- NULL
       Elements <- MolVecList0[[1]]
       MolVecList_DB <- MolVecList0[[2]]
       L_Elements <- length(Elements)
@@ -338,29 +308,14 @@ aligned_molecular_formula_annotator <- function(PARAM) {
         call_MF_Zcol(k)
       }
       #
-      MF_Zcol <- MF_Zcol[order(MF_Zcol[, 1]), ]
-      x_peaks <- unique(c(0, which(diff(MF_Zcol[, 1]) > 0), dim(MF_Zcol)[1]))
+      MF_Zcol <- MF_Zcol[order(MF_Zcol[, 1], decreasing = FALSE), ]
+      xDiff <- which(diff(MF_Zcol[, 1]) > 0)
+      #
+      xZcol <- matrix(rep(0, 2*L_peaks), ncol = 2)
+      #
       u_peakid <- unique(MF_Zcol[, 1])
-      #
-      if (u_peakid[1] != 1) {
-        u_peakid <- c(1, u_peakid)
-        x_peaks <- c(x_peaks[1], x_peaks)
-      }
-      #
-      progressBARboundaries <- txtProgressBar(min = 0, max = L_peaks, initial = 1, style = 3)
-      for (k in 1:L_peaks) {
-        setTxtProgressBar(progressBARboundaries, k)
-        if (k > length(u_peakid)) {
-          u_peakid <- c(u_peakid, k)
-          x_peaks <- c(x_peaks, x_peaks[k])
-        } else {
-          if (u_peakid[k] != k) {
-            u_peakid <- append(u_peakid, k, after = (k - 1))
-            x_peaks <- append(x_peaks, x_peaks[k], after = (k - 1))
-          }
-        }
-      }
-      close(progressBARboundaries)
+      xZcol[u_peakid, 1] <- c(1, (xDiff + 1))
+      xZcol[u_peakid, 2] <- c(xDiff, dim(MF_Zcol)[1])
       #
       print("Completed matching peak IDs!")
       ##
@@ -368,7 +323,7 @@ aligned_molecular_formula_annotator <- function(PARAM) {
       M_IDs <- foreach(k = 1:L_peaks, .combine = 'rbind', .verbose = FALSE) %dopar% {
         call_calculating_median_ranks(k)
       }
-      MF_Zcol <- 0
+      MF_Zcol <- NULL
       print("Completed calculating median ranks!")
       ##
       if (tolower(adjust_freq_rank) == "yes") {
@@ -390,7 +345,7 @@ aligned_molecular_formula_annotator <- function(PARAM) {
       print("Loading the isotopic profiles database!")
       IPDB <- loadRdata(address_sav_IPDB)
       MolVecList0 <- IPDB[[2]]
-      IPDB <- 0
+      IPDB <- NULL
       Elements <- MolVecList0[[1]]
       MolVecList_DB <- MolVecList0[[2]]
       L_Elements <- length(Elements)

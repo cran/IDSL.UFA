@@ -214,7 +214,7 @@ UFA_score_function_optimization_xlsxAnalyzer <- function(spreadsheet) {
           x_ipw <- which(col == 'IonizationPathway')
           x_RT <- which(col == 'RetentionTime(min)')
           if (!(length(x_fn) > 0 & length(x_mf) > 0 & length(x_ipw) > 0 & length(x_RT) > 0)) {
-            print("ERROR!!! Problem with SFT0011! Incorrect column headers in the reference spreadsheet -> The following columns should be detected in the spreadsheet : 'FileName', 'MolcularFormula', 'IonizationPathway', `RetentionTime(min)`, `m/z' - case sensitive")
+            print("ERROR!!! Problem with SFT0011! Incorrect column headers in the reference spreadsheet -> The following columns should be detected in the spreadsheet : 'FileName', 'MolcularFormula', 'IonizationPathway', `RetentionTime(min)` - case sensitive")
             checkpoint_parameter <- 0
           }
         } else {

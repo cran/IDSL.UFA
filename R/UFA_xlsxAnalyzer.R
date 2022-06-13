@@ -233,6 +233,8 @@ UFA_xlsxAnalyzer <- function(spreadsheet) {
           }
         }
       }
+    }
+    if ((tolower(x0005) == "yes") | (tolower(x0006) == "yes")) {
       ##
       x0014 <- which(PARAM[, 1] == 'PARAM0014')
       if (length(x0014) == 0) {
