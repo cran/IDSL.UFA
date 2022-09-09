@@ -23,7 +23,7 @@ score_coefficient_evaluation <- function (PARAM_SFT) {
   }))
   IdentificationScore <- identification_score(Score_coeff, size_IP, PCS, RCS, NEME, maxNEME, R13C_PL, R13C_IP)
   Entire_final_list_unoptimized <- cbind(Entire_final_list_unoptimized, IdentificationScore)
-  progressBARboundaries <- txtProgressBar(min = 1, max = N_compounds, initial = 1, style = 3)
+  progressBARboundaries <- txtProgressBar(min = 0, max = N_compounds, initial = 0, style = 3)
   Entire_final_list_optimized <- do.call(rbind, lapply(1:N_compounds, function(i) {
     setTxtProgressBar(progressBARboundaries, i)
     A <- Entire_final_list_unoptimized[x_c[[i]], ]
@@ -37,7 +37,7 @@ score_coefficient_evaluation <- function (PARAM_SFT) {
                                           "m/z peaklist", "RT(min)", "PeakHeight", "size IP",
                                           "NEME(mDa)", "PCS", "R13C peakList", "R13C Isotopic Profile",
                                           "NDCS", "RCS(%)", "Rank", "CandidateCount", "CompoundID", "MolFMatch")
-  rownames(Entire_final_list_optimized) <- c()
+  rownames(Entire_final_list_optimized) <- NULL
   save(Entire_final_list_optimized, file = paste0(output_path_score_function_calculations, "/Entire_final_list_optimized.Rdata"))
   obj_function <- gsub(" ", "", tolower(PARAM_SFT[which(PARAM_SFT[, 1] == "SFT0018"), 2]))
   if (obj_function == "toprank") {
