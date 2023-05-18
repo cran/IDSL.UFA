@@ -1,7 +1,7 @@
 Package: IDSL.UFA
 Type: Package
 Title: United Formula Annotation (UFA) for HRMS Data Processing
-Version: 1.9
+Version: 2.0
 Authors@R: c(
     person(family = "Fakouri-Baygi", given = "Sadjad", email = "sadjad.fakouri-baygi@mssm.edu",
     role = "aut", comment = c(ORCID = "0000-0002-6864-6911")),
@@ -20,6 +20,6 @@ BugReports: https://github.com/idslme/idsl.ufa/issues
 Encoding: UTF-8
 Archs: i386, x64
 NeedsCompilation: no
-Packaged: 2023-03-31 22:15:48 UTC; sfbaygi
+Packaged: 2023-05-18 19:31:04 UTC; sfbaygi
 Repository: CRAN
-Date/Publication: 2023-04-02 15:00:09 UTC
+Date/Publication: 2023-05-18 21:20:02 UTC

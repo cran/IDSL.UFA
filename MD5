@@ -1,4 +1,4 @@
-a1fcaeef56fa467809c1cb7ab22a6851 *DESCRIPTION
+a507e5eddca41f2bf06aed9678c130d6 *DESCRIPTION
 f5e82dc211693f16d59e41851b260927 *LICENSE
 14ed9c82a9c77e9c67aaaa3392bf5e4e *NAMESPACE
 01ac5226271bf91e368e2b64957a0e64 *R/UFA_IPdbMerger.R
@@ -11,8 +11,8 @@ aa89448192bdc85523acb53e9da2a561 *R/UFA_formula_source.R
 a425da8fcecb199a0c39a370797d19c4 *R/UFA_score_coefficients_corrector.R
 645feb3be003cfe25a9d999edd6eb284 *R/UFA_score_function_optimization.R
 427b9b72eb17efce613ea24be6d68e54 *R/UFA_score_function_optimization_xlsxAnalyzer.R
-2a9587fcaafee61e199081cadd06556b *R/UFA_workflow.R
-ac66e25d11d981a913a840e41de6de07 *R/UFA_xlsxAnalyzer.R
+3cebc1f0fb643a075fea5282c12160e0 *R/UFA_workflow.R
+c96472789a65dfbe29ae72040f192aa4 *R/UFA_xlsxAnalyzer.R
 dd9e412dbcc98639d6ee803a362f68f0 *R/aggregatedIPdbListGenerator.R
 c458dd7c8d365167d8df7ebbf687625b *R/aligned_molecular_formula_annotator.R
 8702039ec1f5684e7f547c0d04c70228 *R/detect_formula_sets.R
@@ -33,7 +33,7 @@ a0b5fee46cc6b5a3cfa7d14d290880f0 *R/molecular_formula_library_generator.R
 4e865a299717d9b8783d2009c401ae1d *R/monoisotopicMassCalculator.R
 fd47ebc3cb0aa6dbe90626332e404dee *R/scoreCoefficientsEvaluation.R
 a2560541a890f0d34f21537cc19c280a *R/scoreCoefficientsOptimization.R
-c8e91eebd38127a49be87433c57eb3fb *R/scoreCoefficientsReplicate.R
+d71778fdc2031865a150c85184b9d43e *R/scoreCoefficientsReplicate.R
 ea124a494ad7922985532ad3b308e4d5 *build/partial.rdb
 52d3be5700dcac3d250573f364287e57 *inst/CITATION
 0af58335ab2f38c2119ff5832b0b4fa2 *inst/extdata/IUPAC_Isotopes.rda
